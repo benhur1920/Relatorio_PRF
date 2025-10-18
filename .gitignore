@@ -17,9 +17,7 @@ __pycache__/
 # Dados locais
 *.csv
 *.xlsx
-*.xls
-*.zip
-*.gz
+
 
 # Configuração de IDEs
 .vscode/
