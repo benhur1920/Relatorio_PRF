@@ -1,0 +1,37 @@
+# Ambiente virtual
+venv/
+.env/
+.venv/
+
+# Cache e temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+
+# Arquivos do Streamlit
+.streamlit/
+
+# Dados locais
+*.csv
+*.xlsx
+*.xls
+*.zip
+*.gz
+
+# Configuração de IDEs
+.vscode/
+.idea/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de build
+build/
+dist/
+*.egg-info/
+
+dados/
