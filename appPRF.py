@@ -6,7 +6,7 @@ from datetime import date
 from streamlit_option_menu import option_menu
 # Agora importa os módulos da pasta utils
 from utils import sobre, dataframe, paines, marcadores
-from utils.totalizadores import total_acidentes,total_feridos,total_mortos,total_veiculos #, total_ilesos
+from utils.totalizadores import total_acidentes,total_feridos,total_mortos,total_veiculos#, total_ilesos
 from utils.marcadores import divisor
 from utils.filtros import filtros_aplicados, filtro_mes_nome
 # ----------------------------
@@ -54,12 +54,18 @@ def carregar_arquivo_parquet():
 
 df = carregar_arquivo_parquet()
 
+
+
+
+
 # ----------------------------
 # Cópia do DataFrame original
 # ----------------------------
 df_filtrado = df.copy()
 
 # Última e primeira data
+# Converte a coluna 'Data' para o formato datetime
+
 ultima_data = df['Data Inversa'].max().strftime("%d/%m/%Y") if not df.empty else None
 primeira_data = df['Data Inversa'].min().strftime("%d/%m/%Y") if not df.empty else None
 
@@ -116,14 +122,14 @@ def criacao_navegacao_e_filtros():
         df_filtrado = filtros_aplicados(df_filtrado, 'Ano')
         df_filtrado = filtro_mes_nome(df_filtrado)
         df_filtrado = filtros_aplicados(df_filtrado, 'Região')
-        df_filtrado = filtros_aplicados(df_filtrado, 'Estado')
+        df_filtrado = filtros_aplicados(df_filtrado, 'Uf')
         df_filtrado = filtros_aplicados(df_filtrado, 'Municipio')
         
 
-    c1, c2, c3, c4= st.columns(4,gap="small")
+    c1, c2, c3, c4 = st.columns(4,gap="small")
 
     with c1.container(border=True):
-        st.metric("Sinistros", total_acidentes(df_filtrado))
+        st.metric("Acidentes", total_acidentes(df_filtrado))
 
     with c2.container(border=True):   
         st.metric("Mortos", total_mortos(df_filtrado))
@@ -134,8 +140,8 @@ def criacao_navegacao_e_filtros():
     with c4.container(border=True):
         st.metric("Veiculos", total_veiculos(df_filtrado))
 
-    #with c4.container(border=True):
-        #st.metric("Ilesos", total_ilesos(df_filtrado))  
+   # with c5.container(border=True):
+       # st.metric("Ilesos", total_ilesos(df_filtrado))  
 
     # DataFrame para gráfico de linha
     #df_filtrado_linha = df.copy()
@@ -152,7 +158,7 @@ def criacao_navegacao_e_filtros():
 
     elif selected == "Painéis":
         #df_filtrado_linha['Ano'] = df_filtrado_linha['Ano'].astype(str)
-        paines.mainGraficos(df_filtrado)
+        paines.mainGraficos(df_filtrado, df)
     else:
         dataframe.mainDataframe(df_filtrado)
 

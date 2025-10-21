@@ -5,9 +5,7 @@ from utils.marcadores import divisor
 
 def sobre():
     
-    
-    # Caminho absoluto seguro da imagem
-    
+      
     
     imagem_path1 = r'C:\Users\Ben-Hur\Desktop\Pos Senac\5_VisualizacaoDados\PRF\imagem\estrada.jpg'
 
