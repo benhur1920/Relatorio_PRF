@@ -16,7 +16,7 @@ def sobre():
     col1, col2 = st.columns([2, 3], gap="small")
 
     with col1:
-        st.image("https://exemplo.com/estrada.jpg", use_container_width=True, caption="Trecho de uma estrada")
+        st.image(imagem_path1, use_container_width=True, caption="Trecho de uma estrada")
 
 
     with col2:
