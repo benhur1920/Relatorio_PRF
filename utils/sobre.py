@@ -7,7 +7,7 @@ def sobre():
     
       
     
-    imagem_path1 = r'C:\Users\Ben-Hur\Desktop\Pos Senac\5_VisualizacaoDados\PRF\imagem\estrada.jpg'
+    imagem_path1 = os.path.join("imagem", "estrada.jpg")
 
     st.markdown("<h2 style='text-align: center; '>🚨 Introdução ao Estudo dos Acidentes Rodoviários da PRF</h2>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
