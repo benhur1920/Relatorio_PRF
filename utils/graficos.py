@@ -614,17 +614,21 @@ def grafico_heatmap(df, coluna_valor, titulo):
     fig.update_layout(height=600, margin=dict(l=0, r=0, t=50, b=0))
     return fig
 
-def grafico_scater(df):
-    
-    st.markdown("### 📉 Relação entre Feridos e Mortes")
+def grafico_scater(marcacao, df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titulo, key=None):
+    st.markdown(marcacao)
     fig2 = px.scatter(
         df,
-        x="Feridos",
-        y="Mortos",
-        size="Mortos",
-        color="Tipo Acidente",
-        hover_name="Tipo Acidente",
-        title="Correlação entre Feridos e Mortos por Tipo de Acidente",
+        x=coluna_x,
+        y=coluna_y,
+        size=tamanho_y,
+        color=cor_bola,
+        hover_name=nome_bola,
+        title=titulo,
     )
     fig2.update_layout(height=500)
-    return st.plotly_chart(fig2, use_container_width=True) 
+
+    # 🔑 Define uma chave única (necessária quando há vários gráficos semelhantes)
+    if key is None:
+        key = f"{coluna_x}_{coluna_y}_{cor_bola}"
+
+    return st.plotly_chart(fig2, use_container_width=True, key=key)

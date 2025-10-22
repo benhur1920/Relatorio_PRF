@@ -13,7 +13,7 @@ from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, 
 
 def graficos(df, df_original):
 
-    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["📊 Quantitativos ","📉 Indicadores", "📍 Localidades", "⚠️ Características dos Acidentes",
+    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["📊 Quantitativos ","📉 Correlações", "📍 Localidades", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
@@ -52,9 +52,9 @@ def graficos(df, df_original):
         tot_veiculos = calculo_tot_veiculos(df)
         tot_acidentes = calculo_tot_acidentes(df)
 
-        taxa_mortalidade = (tot_mortos / tot_acidentes) * 100 if total_acidentes else 0
-        taxa_mortalidade_feridos = (tot_mortos / tot_feridos) * 100 if total_feridos else 0
-        media_veiculos_acidente = round(tot_veiculos / tot_acidentes if total_acidentes else 0)
+        taxa_mortalidade = round((tot_mortos / tot_acidentes) * 100 if total_acidentes else 0,0)
+        taxa_mortalidade_feridos = round((tot_mortos / tot_feridos) * 100 if total_feridos else 0, 0)
+        media_veiculos_acidente = round(tot_veiculos / tot_acidentes if total_acidentes else 0, 0)
 
         c2, c3, c4 = st.columns(3)
         
@@ -69,8 +69,47 @@ def graficos(df, df_original):
             st.metric("🚙 Veículos / Acidente", f"{media_veiculos_acidente:.2f}")  
 
         divisor()
-        grafico_scater(df)
-  
+
+        # Agrupar os dados por grupo de causa
+        df_grouped = df.groupby("Causa Grupo", as_index=False).agg({
+            "Feridos": "sum",
+            "Mortos": "sum",
+            "Veiculos": "sum"
+        })
+        # === GRÁFICO ===
+        grafico_scater(
+            "### 📉 Relação entre Feridos e Mortos (agrupado por causa)",
+            df_grouped,
+            coluna_x="Feridos",
+            coluna_y="Mortos",
+            tamanho_y="Veiculos",
+            cor_bola="Causa Grupo",
+            nome_bola="Causa Grupo",
+            titulo="Correlação entre Feridos e Mortos por Grupo de Causa",
+            key="grafico_feridos_mortos_causa"
+        )
+
+
+        divisor()
+        # Agrupa os dados por tipo de acidente
+        df_grouped_tipo = df.groupby("Tipo Acidente", as_index=False).agg({
+            "Feridos": "sum",
+            "Veiculos": "sum"
+        })
+        
+        grafico_scater(
+        "### 🚘 Relação entre Veículos e Feridos (agrupado por tipo de acidente)",
+        df_grouped_tipo,
+        coluna_x="Veiculos",
+        coluna_y="Feridos",
+        tamanho_y="Feridos",
+        cor_bola="Tipo Acidente",
+        nome_bola="Tipo Acidente",
+        titulo="Correlação entre Veículos e Feridos por Tipo de Acidente",
+        key="grafico_veiculos_feridos_tipo"
+        )
+
+
     with aba3:                                                    
         c1, c2, c3 = st.columns(3)
         with c1:
