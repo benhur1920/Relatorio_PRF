@@ -5,14 +5,16 @@ import streamlit as st
 #from folium.plugins import MarkerCluster
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
-from utils.graficos import grafico_barra, grafico_pizza, grafico_treemap, grafico_coluna, grafico_linha,  grafico_heatmap, grafico_barra_sem_ordenar, grafico_radar
+from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater, grafico_coluna, grafico_linha,  
+                            grafico_heatmap, grafico_barra_sem_ordenar, grafico_radar)
 from utils.filtros import filtros_aplicados, filtro_mes_nome
-from utils.totalizadores import total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos
+from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
+                                 calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
 
 def graficos(df, df_original):
 
-    aba1, aba2, aba3, aba4, aba5 = st.tabs(["📊 Quantitativos ", "📍 Localidades", "⚡Fatores de Ocorrências",
-                                            "⚠️ Características dos Acidentes",  "🗺️ Mapas"])
+    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["📊 Quantitativos ","📉 Indicadores", "📍 Localidades", "⚠️ Características dos Acidentes",
+                                                  "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
         c1, c2 = st.columns([3,2])
@@ -42,9 +44,34 @@ def graficos(df, df_original):
             grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="Veículos por Dia da Semana")
         with c10:
             grafico_barra_sem_ordenar(df,'Dia Semana', 'Veiculos', titulo=f"Dia da semana = {total_veiculos(df)}")
+
+    with aba2:
+        divisor()
+        tot_mortos = calculo_tot_mortos(df)
+        tot_feridos = calculo_tot_feridos(df)
+        tot_veiculos = calculo_tot_veiculos(df)
+        tot_acidentes = calculo_tot_acidentes(df)
+
+        taxa_mortalidade = (tot_mortos / tot_acidentes) * 100 if total_acidentes else 0
+        taxa_mortalidade_feridos = (tot_mortos / tot_feridos) * 100 if total_feridos else 0
+        media_veiculos_acidente = round(tot_veiculos / tot_acidentes if total_acidentes else 0)
+
+        c2, c3, c4 = st.columns(3)
         
+
+        with c2.container(border=True):   
+            st.metric("⚖️ Mortalidade (%)", f"{taxa_mortalidade:.2f}%")
+
+        with c3.container(border=True):
+            st.metric("🩸 Mortos / 100 Feridos", f"{taxa_mortalidade_feridos:.2f}%")
+
+        with c4.container(border=True):
+            st.metric("🚙 Veículos / Acidente", f"{media_veiculos_acidente:.2f}")  
+
+        divisor()
+        grafico_scater(df)
   
-    with aba2:                                                    
+    with aba3:                                                    
         c1, c2, c3 = st.columns(3)
         with c1:
            df = filtros_aplicados(df, 'Classificacao Acidente') 
@@ -66,7 +93,35 @@ def graficos(df, df_original):
         
 
 
+    
+
+                
+        
+        
     with aba4:
+                  
+        #df = filtros_aplicados(df, 'Km') 
+        #df = filtros_aplicados(df, 'Br')
+
+        divisor()
+
+        c1, c2 = st.columns(2)
+        with c1:
+            grafico_coluna(df, 'Tipo Pista', titulo="Tipo Pista")
+        with c2:
+            grafico_pizza(df, 'Uso Solo', titulo="Trecho Urbano ou Rural")
+        divisor()
+        c3, c4 = st.columns(2)     
+        with c3:
+            grafico_barra(df, 'Dia Semana', titulo="Dia da Semana")
+        with c4:
+            grafico_coluna(df, 'Fase Dia', titulo="Fase do Dia")
+        
+        #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
+        #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
+        #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
+
+    with aba5:
         '''
         c7, c8, c9 = st.columns(3)
         with c7:
@@ -83,13 +138,13 @@ def graficos(df, df_original):
             top_n = st.slider("Top N Tipo Acidente", min_value=5, max_value=16, value=5)
             grafico_barra(df, 'Tipo Acidente', titulo="Tipos de Acidentes",  top_n=top_n)
         with c2:
-            top_n = st.slider("Top N Causa Acidente", min_value=5, max_value=30, value=5)
-            grafico_barra(df, 'Causa Acidente', titulo="Causas de Acidentes",  top_n=top_n)
+            top_n = st.slider("Top N Causa Acidente", min_value=5, max_value=8, value=5)
+            grafico_barra(df, 'Causa Grupo', titulo="Causas de Acidentes",  top_n=top_n)
         #top_n = st.slider("Top N Estados", min_value=5, max_value=16, value=5)
         divisor()
         c3, c4 = st.columns(2)
         with c3:
-            grafico_coluna(df, 'Condicao Metereologica', titulo="Condicao Metereologica")
+            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condicao Metereologica")
         with c4:
             #grafico_barra(df, 'Grupo Via', titulo="Tracado Via")
             grafico_barra(df, 'Fase Dia', titulo="Fase do Dia")
@@ -127,34 +182,17 @@ def graficos(df, df_original):
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico de radar: {e}")
 
-                
-        
-        
-    with aba3:
-                  
-        #df = filtros_aplicados(df, 'Km') 
-        #df = filtros_aplicados(df, 'Br')
-
-        divisor()
+    
+    
+    with aba6:
+        st.header("Análise Geográfica de Acidentes")
 
         c1, c2 = st.columns(2)
         with c1:
-            grafico_coluna(df, 'Tipo Pista', titulo="Tipo Pista")
+           df = filtros_aplicados(df, 'Br') 
         with c2:
-            grafico_pizza(df, 'Uso Solo', titulo="Trecho Urbano ou Rural")
-        divisor()
-        c3, c4 = st.columns(2)     
-        with c3:
-            grafico_barra(df, 'Dia Semana', titulo="Dia da Semana")
-        with c4:
-            grafico_coluna(df, 'Fase Dia', titulo="Fase do Dia")
+           df = filtros_aplicados(df, 'Km')
         
-        #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
-        #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
-        #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
-    
-    with aba5:
-        st.header("Análise Geográfica de Acidentes")
 
         # Seletor de tipo de mapa
         tipo_mapa = st.radio(
@@ -181,7 +219,50 @@ def graficos(df, df_original):
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("Não foi possível gerar o mapa. Verifique se há dados válidos.")
-                
+
+    with aba7:
+        
+        st.header("📘 Metodologia da Análise")
+        st.markdown("Abaixo estão os principais critérios e tratamentos aplicados aos dados utilizados neste painel:")
+
+        with st.expander("🧹 **Tratamentos aplicados aos dados**"):
+            st.markdown("""
+            - Exclusão de registros **sem mortos e feridos** (mantidos apenas acidentes com vítimas);  
+            - Junção das colunas **Feridos Graves** e **Feridos Leves** em `Feridos`;  
+            - Remoção da coluna `Ilesos`, por não representar gravidade no evento;  
+            - Padronização de textos (nomes de municípios, causas, condições climáticas, etc.);  
+            - Junção das colunas `Município` e `UF` → `Município - UF`.  
+            """)
+
+        with st.expander("🧠 **Agrupamento das causas dos acidentes**"):
+            st.markdown("""
+            - 🚗 **Condutor - Falha humana:** Reação tardia, contramão, ultrapassagem, velocidade, celular, etc.  
+            - 💤 **Condutor - Fadiga / Álcool / Drogas / Saúde:** Sono, ingestão de álcool, mal súbito.  
+            - 🛣️ **Via / Infraestrutura:** Buracos, pista escorregadia, sinalização deficiente, iluminação ruim.  
+            - 🌧️ **Clima / Ambiente:** Chuva, neblina, fumaça, óleo, areia.  
+            - 🔧 **Veículo - Falha mecânica:** Freios, suspensão, pneus, faróis.  
+            - 🚶 **Pedestre:** Travessia fora da faixa, embriaguez, falta de passarela.  
+            - 🐄 **Animais / Objetos / Obstáculos:** Animais, objetos, obstruções.  
+            - ❓ **Outros / Indefinidos:** Causas não especificadas.  
+            """)
+
+        with st.expander("📆 **Período e fonte dos dados**"):
+            st.markdown("""
+            - Dados públicos da **Polícia Rodoviária Federal (PRF)**.  
+            - Período analisado: **2023 e 2024**.  
+            - Escopo: acidentes com vítimas (mortos e/ou feridos).  
+            """)
+
+        with st.expander("💡 **Objetivo da aplicação**"):
+            st.markdown("""
+            Este painel interativo foi desenvolvido para **explorar os padrões e fatores associados aos acidentes rodoviários**, 
+            permitindo identificar relações entre causas, condições climáticas, horários e gravidade dos eventos.
+            """)
+
+        st.markdown("---")
+        st.caption("_Esta aba tem como objetivo garantir transparência e reprodutibilidade da análise._")
+
+
 
 def mainGraficos(df, df_original):
     divisor()

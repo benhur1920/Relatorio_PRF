@@ -25,6 +25,18 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     total = total.sort_values('Total', ascending=False)
 
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    # Define o valor máximo para o eixo Y
+    if total.empty:
+        max_valor = 0
+    else:
+        max_valor = total['Total'].max()
+    
+    # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
+    # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
+    y_domain = [0, max_valor * 1.1] 
+    # --- FIM DA MODIFICAÇÃO ---
+
     # Calcula percentual
     soma_total = total['Total'].sum() if len(total) > 0 else 0
     total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
@@ -33,7 +45,10 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
         x=alt.X(coluna_x, type='nominal',
                 sort=alt.EncodingSortField(field="Total", order="descending")),
-        y=alt.Y('Total:Q'),
+        
+        # --- MODIFICAÇÃO APLICADA AQUI ---
+        y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain)),
+        
         tooltip=[
             alt.Tooltip(coluna_x, title='Categoria'),
             alt.Tooltip('Total:Q', title='Total', format=','),
@@ -45,7 +60,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     text = bar.mark_text(
         align='center',
         baseline='bottom',
-        dy=-5,
+        dy=-5, # Move o texto 5 pixels para CIMA (fora da barra)
         color='black'
     ).encode(
         text=alt.Text('Total:Q', format=',')
@@ -74,7 +89,17 @@ def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=No
     if top_n is not None:
         total = total.nlargest(top_n, 'Total')
 
+    # Define o valor máximo para o eixo Y
+    if total.empty:
+        max_valor = 0
+    else:
+        max_valor = total['Total'].max()
     
+
+    # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
+    # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
+    y_domain = [0, max_valor * 1.1] 
+    # --- FIM DA MODIFICAÇÃO ---
 
     # Calcula percentual
     soma_total = total['Total'].sum() if len(total) > 0 else 0
@@ -127,6 +152,19 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
         total = total.nlargest(top_n, 'Total')
 
     total = total.sort_values('Total', ascending=True)
+
+    # --- INÍCIO DA MODIFICAÇÃO ---
+    # Define o valor máximo para o eixo X
+    if total.empty:
+        max_valor = 0
+    else:
+        max_valor = total['Total'].max()
+    
+    # Adiciona um "respiro" (ex: 15%) à direita no eixo X para o texto caber
+    # Você pode ajustar 1.15 para 1.2 (20%) se o texto for muito longo
+    x_domain = [0, max_valor * 1.15] 
+    # --- FIM DA MODIFICAÇÃO ---
+
     total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1)
 
     # --- Tema geral ---
@@ -137,7 +175,9 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
         x=alt.X('Total:Q',
                 title='',
-                axis=alt.Axis(labels=False, ticks=False, domain=False)
+                axis=alt.Axis(labels=False, ticks=False, domain=False),
+                # --- MODIFICAÇÃO APLICADA AQUI ---
+                scale=alt.Scale(domain=x_domain)
         ),
         y=alt.Y(coluna_x,
                 sort=alt.EncodingSortField(field="Total", order="descending"),
@@ -155,7 +195,7 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     text = bar.mark_text(
         align='left',
         baseline='middle',
-        dx=6,
+        dx=6, # Move 6 pixels para DIREITA (para fora da barra)
         fontSize=12,
         color='black'
     ).encode(
@@ -573,3 +613,18 @@ def grafico_heatmap(df, coluna_valor, titulo):
 
     fig.update_layout(height=600, margin=dict(l=0, r=0, t=50, b=0))
     return fig
+
+def grafico_scater(df):
+    
+    st.markdown("### 📉 Relação entre Feridos e Mortes")
+    fig2 = px.scatter(
+        df,
+        x="Feridos",
+        y="Mortos",
+        size="Mortos",
+        color="Tipo Acidente",
+        hover_name="Tipo Acidente",
+        title="Correlação entre Feridos e Mortos por Tipo de Acidente",
+    )
+    fig2.update_layout(height=500)
+    return st.plotly_chart(fig2, use_container_width=True) 
