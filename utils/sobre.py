@@ -25,23 +25,28 @@ def sobre():
             """
             <div style="text-align: justify; font-size: 17px">
                 <p>
-                    A análise de dados de acidentes de trânsito é essencial para compreender a dinâmica da segurança viária no 
-                    Brasil e subsidiar ações preventivas mais eficazes.
+                    A análise dos dados de acidentes de trânsito é fundamental para compreender a dinâmica da segurança viária 
+                    no Brasil e orientar políticas públicas mais eficazes de prevenção. De acordo com a Polícia Rodoviária 
+                    Federal (PRF), a malha rodoviária brasileira soma aproximadamente 74 mil quilômetros, em um país de 
+                    dimensões continentais, com trechos de pista simples, dupla e múltipla, variando entre bons e precários 
+                    estados de conservação.
                 </p>
                 <p>
-                    Este aplicativo foi desenvolvido com base em dados públicos da Polícia Rodoviária Federal (PRF), que 
-                    registram as ocorrências de acidentes nas rodovias federais de todo o país.
+                    Neste estudo, utilizamos a base de dados da PRF, proveniente dos relatórios de ocorrências que registram 
+                    sinistros nas rodovias federais de todo o país. A partir dessas informações, analisamos aspectos como 
+                    tipo de rodovia, causa dos acidentes e condições meteorológicas, entre outros fatores determinantes.
                 </p>
                 <p>
-                    Os números são alarmantes. Vivemos uma verdadeira situação de guerra, com a perda de inúmeras vidas e um 
-                    elevado número de feridos, o que gera grandes impactos sociais e econômicos. Além do sofrimento das famílias,
-                      há prejuízos significativos para as empresas e vultosos gastos públicos com saúde e recuperação de 
-                      infraestrutura.
+                    Os números revelam uma realidade preocupante: vivemos uma verdadeira situação de guerra no trânsito, com 
+                    a perda de inúmeras vidas e um elevado número de feridos — gerando impactos sociais e econômicos expressivos. 
+                    Além do sofrimento humano, há prejuízos significativos para empresas e altos custos públicos com saúde, 
+                    previdência e recuperação de infraestrutura.
                 </p>
                 <p>
-                    O objetivo deste trabalho é transformar esses dados em informações úteis, possibilitando a identificação de 
-                    padrões e tendências sobre os acidentes — como locais, horários, tipos de ocorrência, veículos envolvidos e 
-                    vítimas.
+                    O objetivo deste estudo é dar vida aos dados — transformar números em informação clara e visual, ajudando a 
+                    identificar padrões, horários críticos, locais de maior risco e tipos de ocorrência. Com isso, queremos 
+                    estimular a reflexão e contribuir para um trânsito mais seguro, mostrando que cada dado carrega uma 
+                    história e pode inspirar uma mudança.
                 </p>
             </div>
             """,

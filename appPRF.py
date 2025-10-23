@@ -66,8 +66,8 @@ df_filtrado = df.copy()
 # Última e primeira data
 # Converte a coluna 'Data' para o formato datetime
 
-ultima_data = df['Data Inversa'].max().strftime("%d/%m/%Y") if not df.empty else None
-primeira_data = df['Data Inversa'].min().strftime("%d/%m/%Y") if not df.empty else None
+ultima_data = df['Data'].max().strftime("%d/%m/%Y") if not df.empty else None
+primeira_data = df['Data'].min().strftime("%d/%m/%Y") if not df.empty else None
 
 
 

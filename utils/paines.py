@@ -1,12 +1,12 @@
 # utils/dashboards.py
 import streamlit as st
-#import folium
+import pandas as pd
 #from streamlit_folium import st_folium
 #from folium.plugins import MarkerCluster
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
 from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater, grafico_coluna, grafico_linha,  
-                            grafico_heatmap, grafico_barra_sem_ordenar, grafico_radar)
+                            grafico_heatmap, grafico_barra_sem_ordenar, grafico_radar, grafico_treemap)
 from utils.filtros import filtros_aplicados, filtro_mes_nome
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
@@ -17,24 +17,25 @@ def graficos(df):
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
-        c1, c2 = st.columns([3,2])
+        """
+        c1, c2 = st.columns([3,2], gap="large")
         with c1:
             grafico_linha(df, 'Data Inversa', None, titulo=f"**Total de acidentes no período:** {total_acidentes(df)}")
         with c2:
             grafico_barra_sem_ordenar(df, 'Ano', titulo="Acidentes")
         
-        c3, c4 = st.columns([3,2])
+        c3, c4 = st.columns([3,2], gap="large")
         with c3:
             grafico_linha(df, 'Data Inversa', 'Mortos', titulo=f"**Total de mortes no período:** {total_mortos(df)}")
         with c4:
             grafico_barra_sem_ordenar(df, 'Ano', 'Mortos', titulo="Mortos")
 
-        c5, c6 = st.columns([3,2])
+        c5, c6 = st.columns([3,2], gap="large")
         with c5:
             grafico_linha(df, 'Data Inversa', 'Feridos', titulo=f"**Total de feridos no período:** {total_feridos(df)}")
         with c6:
             grafico_barra_sem_ordenar(df, 'Ano','Feridos', titulo="Feridos")
-        c7, c8 = st.columns([3,2])
+        c7, c8 = st.columns([3,2], gap="large")
         with c7:
             grafico_linha(df, 'Data Inversa', 'Veiculos', titulo=f"**Total de veículos envolvidos no período:** {total_veiculos(df)}")
         with c8:
@@ -42,7 +43,69 @@ def graficos(df):
         
         
         grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="**Total de veículos envolvidos pelos dias da semana no período:**")
+        """
         
+
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico temporal para análise")
+
+        # --- Definição de colunas ---
+        colunas_categoricas = ['Data', 'Ano', 'Mês', 'Dia', 'Dia Semana']
+        colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
+
+        c1,c2 = st.columns(2, gap="large")
+        with c1:
+            # --- Selectbox para categoria (Eixo X) ---
+            coluna_categoria = st.selectbox(
+                "Selecione a escala de tempo disponivel do conjunto de dados para o Eixo X",
+                options=colunas_categoricas,
+                index=colunas_categoricas.index("Data"),
+                key="select_categoria"
+            )
+        with c2:
+            # --- Selectbox para grupo (Eixo Y) ---
+            # Mapeando None para "Total Acidentes"
+            grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
+            grupo_options_display = [g[0] for g in grupo_display_map]
+
+            coluna_grupo_display = st.selectbox(
+                "Selecione o grupo disponivel do conjunto de dados para o Eixo Y)",
+                options=grupo_options_display,
+                index=0,
+                key="select_grupo"
+            )
+
+        # Recupera o valor real do selectbox
+        coluna_grupo = dict(grupo_display_map)[coluna_grupo_display]
+
+        # --- Validação de categoria e grupo iguais ---
+        if coluna_categoria == coluna_grupo:
+            st.warning("⚠️ As colunas de categoria e grupo não podem ser iguais. Escolha colunas diferentes.")
+            st.stop()
+
+        # --- Preparação para gráfico ---
+        df_temp = df.copy()
+
+        # Ordenar mês corretamente, caso seja selecionado
+        if coluna_categoria == "Mês":
+            meses_pt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+            df_temp['Mês'] = pd.Categorical(df_temp['Mês'], categories=meses_pt, ordered=True)
+        # Ordenar dia da semana corretamente, caso seja selecionado
+        if coluna_categoria == "Dia Semana":
+            dias_semana = ["Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira",
+                        "Quinta-Feira", "Sexta-Feira", "Sábado"]
+            df_temp['Dia Semana'] = pd.Categorical(df_temp['Dia Semana'], categories=dias_semana, ordered=True)
+
+        # --- Título dinâmico ---
+        titulo = f"{coluna_categoria} x {coluna_grupo_display}"
+
+        # --- Chamada do gráfico de linha ---
+        try:
+            grafico_linha(df_temp, coluna_categoria, coluna_grupo, titulo)
+        except Exception as e:
+            st.error(f"Erro ao gerar o gráfico de linha: {e}")
+
+                
 
     with aba2:
         divisor()
@@ -55,7 +118,7 @@ def graficos(df):
         taxa_mortalidade_feridos = round((tot_mortos / tot_feridos) * 100 if total_feridos else 0, 0)
         media_veiculos_acidente = round(tot_veiculos / tot_acidentes if total_acidentes else 0, 0)
 
-        c2, c3, c4 = st.columns(3)
+        c2, c3, c4 = st.columns(3, gap="large")
         
 
         with c2.container(border=True):   
@@ -110,7 +173,7 @@ def graficos(df):
 
 
     with aba3:                                                    
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3 = st.columns(3, gap="large")
         with c1:
            df = filtros_aplicados(df, 'Classificacao Acidente') 
         with c2:
@@ -143,17 +206,17 @@ def graficos(df):
 
         divisor()
 
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2, gap="large")
         with c1:
             grafico_coluna(df, 'Tipo Pista', titulo="Tipo Pista")
         with c2:
             grafico_pizza(df, 'Uso Solo', titulo="Trecho Urbano ou Rural")
         divisor()
-        c3, c4 = st.columns(2)     
+        c3, c4 = st.columns(2, gap="large")     
         with c3:
             grafico_barra(df, 'Dia Semana', titulo="Dia da Semana")
         with c4:
-            grafico_coluna(df, 'Partes Dia', titulo="Partes do Dia")
+            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condições Climáticas")
         
         #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
         #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
@@ -161,7 +224,7 @@ def graficos(df):
 
     with aba5:
         
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2, gap="large")
         with c1:
             top_n = st.slider("Top N Tipo Acidente", min_value=5, max_value=16, value=5)
             grafico_barra(df, 'Tipo Acidente', titulo="Tipos de Acidentes",  top_n=top_n)
@@ -170,12 +233,12 @@ def graficos(df):
             grafico_barra(df, 'Causa Grupo', titulo="Causas de Acidentes",  top_n=top_n)
         #top_n = st.slider("Top N Estados", min_value=5, max_value=16, value=5)
         divisor()
-        c3, c4 = st.columns(2)
+        c3, c4 = st.columns(2, gap="large")
         with c3:
-            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condição Meteorologica")
+            grafico_treemap(df, 'Partes Dia', titulo="Partes do dia")
         with c4:
             #grafico_barra(df, 'Grupo Via', titulo="Tracado Via")
-            grafico_barra(df, 'Fase Dia', titulo="Fase do Dia")
+            grafico_treemap(df, 'Fase Dia', titulo="Fase do Dia")
 
         divisor()
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de radar para analise")
@@ -215,7 +278,7 @@ def graficos(df):
     with aba6:
         st.header("Análise Geográfica de Acidentes")
 
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2, gap="large")
         with c1:
            df = filtros_aplicados(df, 'Br') 
         with c2:
@@ -256,7 +319,6 @@ def graficos(df):
         with st.expander("🧹 **Principais tratamentos aplicados aos dados/Enriquecimento da fonte de dados**"):
             st.markdown("""
             - Junção das colunas **Feridos Graves** e **Feridos Leves** em `Feridos`;  
-            - Remoção das colunas ['delegacia', 'regional', 'uop', 'id', 'ignorados', 'ilesos', 'Estado' ], por não representar gravidade no evento;  
             - Criação das colunas ['Ano', 'Mês','Dia', 'Partes_Dia', 'Região'] para futura aplicação de machine learning;  
             - Junção das colunas `Município` e `UF` → `Município - UF`.
             """)

@@ -47,10 +47,10 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
                 sort=alt.EncodingSortField(field="Total", order="descending")),
         
         # --- MODIFICAÇÃO APLICADA AQUI ---
-        y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain)),
+        y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain), axis=None), # axis=None - remove o nome e valor da coluna y
         
         tooltip=[
-            alt.Tooltip(coluna_x, title='Categoria'),
+            alt.Tooltip(coluna_x, title=coluna_x),
             alt.Tooltip('Total:Q', title='Total', format=','),
             alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
         ]
@@ -108,7 +108,10 @@ def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=No
    # Gráfico de barras com cor fixa e tooltip com percentual
     bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
         x=alt.X(coluna_x, type='nominal'),
-        y=alt.Y('Total:Q'),
+        y=alt.Y('Total:Q',
+                scale=alt.Scale(domain=y_domain),
+                axis=alt.Axis(labels=False, ticks=False, domain=False, title=None)
+            ),
         tooltip=[
             alt.Tooltip(coluna_x, title='Categoria'),
             alt.Tooltip('Total:Q', title='Total', format=','),
@@ -386,19 +389,45 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
         x_axis = alt.X(coluna_x, type='nominal', sort=None, title=coluna_x)
         tooltip_x = alt.Tooltip(coluna_x, title='Categoria')
 
-    # 4. Gráfico de linha (o tooltip está definido aqui)
-    line = alt.Chart(total).mark_line(point=True, color='#1f77b4').encode(
+    # 4. Gráfico em Camadas
+    
+    # 4.1. Base do Gráfico (Define os dados, eixos e tooltips)
+    base = alt.Chart(total).encode(
         x=x_axis,
-        y=alt.Y('Total:Q', title='Total'),
+        y=alt.Y('Total:Q', title=None),
         tooltip=[
             tooltip_x,
-            alt.Tooltip('Total:Q', title='Total', format=','),
+            alt.Tooltip('Total:Q', title='Total', format=','), # format=',' para 1,000
             alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
         ]
     )
 
-    # O gráfico agora é apenas a camada 'line'
-    chart = line
+    # 4.2. Camada da Linha
+    line = base.mark_line(color='#1f77b4')
+
+    # 4.3. Camada dos Pontos (Substitui o 'point=True')
+    points = base.mark_point(
+        size=60,
+        filled=True,
+        color='#1f77b4'
+    )
+
+    # 4.4. Camada de Texto (Os rótulos dos dados)
+    text = base.mark_text(
+        align='center',
+        baseline='bottom', # Coloca o texto acima do ponto
+        dy=-8              # Desloca o texto 8 pixels para CIMA
+    ).encode(
+        # Define o texto a ser exibido: o valor da coluna 'Total'
+        # Usamos format=',' para formatar números (ex: 1,500)
+        text=alt.Text('Total:Q', format=',')
+    )
+
+    # 4.5. Combina as camadas
+    # O gráfico final é a soma da linha, dos pontos e do texto
+    chart = line + points + text
+    
+    # --- FIM DA CORREÇÃO ---
     
     return st.altair_chart(chart, use_container_width=True)
 
