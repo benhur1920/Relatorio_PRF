@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.marcadores import divisor
-#from utils.totalizadores import calular_a_quantidade_de_colunas
+
 import pandas as pd
 
 def dataframe(df_filtrado):
@@ -16,7 +16,7 @@ def dataframe(df_filtrado):
             """, unsafe_allow_html=True
         )
         
-        #st.dataframe(df_filtrado)
+        
         # Seleção de colunas
         with st.expander('Clique para selecionar as colunas  que deseja para download do seu arquivo .csv na seta'):
             colunas = st.multiselect(

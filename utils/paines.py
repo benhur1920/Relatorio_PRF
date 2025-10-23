@@ -1,13 +1,10 @@
-# utils/dashboards.py
 import streamlit as st
 import pandas as pd
-#from streamlit_folium import st_folium
-#from folium.plugins import MarkerCluster
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
 from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater, grafico_coluna, grafico_linha,  
-                            grafico_heatmap, grafico_barra_sem_ordenar, grafico_radar, grafico_treemap)
-from utils.filtros import filtros_aplicados, filtro_mes_nome
+                            grafico_heatmap, grafico_radar, grafico_treemap)
+from utils.filtros import filtros_aplicados
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
 
@@ -45,6 +42,7 @@ def graficos(df):
         grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="**Total de veículos envolvidos pelos dias da semana no período:**")
         """
         
+        # Fazer gráficos dinâmicos
 
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico temporal para análise")
 
@@ -201,9 +199,7 @@ def graficos(df):
         
     with aba4:
                   
-        #df = filtros_aplicados(df, 'Km') 
-        #df = filtros_aplicados(df, 'Br')
-
+        
         divisor()
 
         c1, c2 = st.columns(2, gap="large")
@@ -231,13 +227,13 @@ def graficos(df):
         with c2:
             top_n = st.slider("Top N Causa Acidente", min_value=5, max_value=8, value=5)
             grafico_barra(df, 'Causa Grupo', titulo="Causas de Acidentes",  top_n=top_n)
-        #top_n = st.slider("Top N Estados", min_value=5, max_value=16, value=5)
+        
         divisor()
         c3, c4 = st.columns(2, gap="large")
         with c3:
             grafico_treemap(df, 'Partes Dia', titulo="Partes do dia")
         with c4:
-            #grafico_barra(df, 'Grupo Via', titulo="Tracado Via")
+            
             grafico_treemap(df, 'Fase Dia', titulo="Fase do Dia")
 
         divisor()
@@ -313,6 +309,8 @@ def graficos(df):
 
     with aba7:
         
+        # Fazer nota explicatoria da analise de dados e desenvolvimento do app
+
         st.header("📘 Metodologia da Análise")
         st.markdown("Abaixo estão os principais critérios e tratamentos aplicados aos dados utilizados neste painel:")
 
@@ -380,6 +378,5 @@ def graficos(df):
 
 def mainGraficos(df):
     divisor()
-    
     graficos(df) 
-    #divisor()
+   

@@ -3,6 +3,9 @@ import altair as alt
 import plotly.express as px
 import pandas as pd
 
+
+# Gráfico de barras
+
 def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
     Cria gráfico Altair dinâmico, com texto sobre as barras e percentual no tooltip.
@@ -25,7 +28,6 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     total = total.sort_values('Total', ascending=False)
 
-    # --- INÍCIO DA MODIFICAÇÃO ---
     # Define o valor máximo para o eixo Y
     if total.empty:
         max_valor = 0
@@ -35,8 +37,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
     # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
     y_domain = [0, max_valor * 1.1] 
-    # --- FIM DA MODIFICAÇÃO ---
-
+    
     # Calcula percentual
     soma_total = total['Total'].sum() if len(total) > 0 else 0
     total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
@@ -46,7 +47,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
         x=alt.X(coluna_x, type='nominal',
                 sort=alt.EncodingSortField(field="Total", order="descending"), title=None),
         
-        # --- MODIFICAÇÃO APLICADA AQUI ---
+        
         y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain), axis=None), # axis=None - remove o nome e valor da coluna y
         
         tooltip=[
@@ -68,6 +69,8 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     chart = alt.layer(bar, text).properties(width='container')
     return st.altair_chart(chart, use_container_width=True)
+
+# Grafico de barras sem ordenacao
 
 def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
@@ -99,7 +102,7 @@ def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=No
     # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
     # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
     y_domain = [0, max_valor * 1.1] 
-    # --- FIM DA MODIFICAÇÃO ---
+    
 
     # Calcula percentual
     soma_total = total['Total'].sum() if len(total) > 0 else 0
@@ -132,7 +135,7 @@ def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=No
     chart = alt.layer(bar, text).properties(width='container')
     return st.altair_chart(chart, use_container_width=True)
 
-
+# Gráfico de colunas
 
 def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
@@ -156,7 +159,7 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     total = total.sort_values('Total', ascending=True)
 
-    # --- INÍCIO DA MODIFICAÇÃO ---
+    
     # Define o valor máximo para o eixo X
     if total.empty:
         max_valor = 0
@@ -166,7 +169,7 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     # Adiciona um "respiro" (ex: 15%) à direita no eixo X para o texto caber
     # Você pode ajustar 1.15 para 1.2 (20%) se o texto for muito longo
     x_domain = [0, max_valor * 1.15] 
-    # --- FIM DA MODIFICAÇÃO ---
+    
 
     total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1)
 
@@ -216,6 +219,8 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     )
 
     return st.altair_chart(chart, use_container_width=True)
+
+# Grafico de pizza
 
 def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=None):
     """
@@ -277,7 +282,7 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
     return st.altair_chart(chart, use_container_width=True)
 
 
-
+# Grafico de calor
 
 
 def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=None):
@@ -331,7 +336,7 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
     # 7. Renderiza no Streamlit
     return st.plotly_chart(fig, use_container_width=True)
 
-
+# Grafico de linha
 
 def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
@@ -426,16 +431,11 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     # 4.5. Combina as camadas
     # O gráfico final é a soma da linha, dos pontos e do texto
     chart = line + points + text
-    
-    # --- FIM DA CORREÇÃO ---
-    
+        
     return st.altair_chart(chart, use_container_width=True)
 
 
-
-
-
-
+# Gráfico de radar
 
 def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
     """
@@ -483,13 +483,14 @@ def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
 
     st.plotly_chart(fig, use_container_width=True)
 
-
+# Grafico de mapas
 
 def grafico_heatmap(df, coluna_valor, titulo):
     """
-    Cria um mapa de calor dinâmico (Mortes, Feridos ou Acidentes).
+    Cria um mapa de calor dinâmico (Mortos, Feridos ou Acidentes).
     Mostra no tooltip: Região, UF, Município, BR e KM.
     """
+
     if df is None or df.empty:
         return None
 
@@ -497,6 +498,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
     if not colunas_necessarias.issubset(df.columns):
         return None
 
+    # Remove linhas sem coordenadas ou valor
     df = df.dropna(subset=['Latitude', 'Longitude', coluna_valor])
     if df.empty:
         return None
@@ -507,13 +509,24 @@ def grafico_heatmap(df, coluna_valor, titulo):
     df[coluna_valor] = pd.to_numeric(df[coluna_valor], errors='coerce')
     df['Km'] = pd.to_numeric(df.get('Km', 0), errors='coerce')
 
-    # Escolhe escala de cores conforme o tipo
+    # Remove linhas onde o valor é NaN após conversão
+    df = df.dropna(subset=[coluna_valor])
+    if df.empty:
+        return None
+
+    # Escolhe escala de cores e radius
     if coluna_valor == "Mortos":
         escala = "Reds"
+        raio_mapa = 15  # menor do que 30
+        range_color = [0, max(5, df[coluna_valor].max())]  # ajusta intensidade
     elif coluna_valor == "Feridos":
-        escala = "greys"
+        escala = "Greys"
+        raio_mapa = max(10, min(30, int(1000 / (len(df) ** 0.5))))
+        range_color = [0, df[coluna_valor].max()]
     else:
         escala = "Blues"
+        raio_mapa = max(10, min(30, int(1000 / (len(df) ** 0.5))))
+        range_color = [0, df[coluna_valor].max()]
 
     # Cria o mapa de calor
     fig = px.density_mapbox(
@@ -521,24 +534,27 @@ def grafico_heatmap(df, coluna_valor, titulo):
         lat='Latitude',
         lon='Longitude',
         z=coluna_valor,
-        radius=5,  # menor raio = mais leve e mais rápido
+        radius=raio_mapa,
         hover_data={
             'Região': True,
             'Uf': True,
             'Municipio': True,
             'Br': True,
             'Km': ':.1f',
-            coluna_valor: True
+            coluna_valor: True  # garante que Mortos/Feridos apareçam no tooltip
         },
-        center=dict(lat=-15.78, lon=-52.0),  # centro mais aberto
+        center=dict(lat=-15.78, lon=-52.0),
         zoom=3,
         mapbox_style='carto-positron',
         color_continuous_scale=escala,
+        range_color=range_color,
         title=titulo
     )
 
     fig.update_layout(height=600, margin=dict(l=0, r=0, t=50, b=0))
     return fig
+
+# Gráfico scater
 
 def grafico_scater(marcacao, df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titulo, key=None):
     st.markdown(marcacao)
@@ -553,7 +569,7 @@ def grafico_scater(marcacao, df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_b
     )
     fig2.update_layout(height=500)
 
-    # 🔑 Define uma chave única (necessária quando há vários gráficos semelhantes)
+    #  Define uma chave única (necessária quando há vários gráficos semelhantes)
     if key is None:
         key = f"{coluna_x}_{coluna_y}_{cor_bola}"
 
