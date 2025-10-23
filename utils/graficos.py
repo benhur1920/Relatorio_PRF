@@ -328,6 +328,8 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
     # 7. Renderiza no Streamlit
     return st.plotly_chart(fig, use_container_width=True)
 
+
+
 def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
     Cria gráfico de linha Altair dinâmico.
@@ -401,114 +403,9 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     return st.altair_chart(chart, use_container_width=True)
 
 
-def grafico_mapa_fatais(df):
-    # 1. Definir colunas necessárias
-    colunas_necessarias = [
-        'Latitude', 'Longitude', 'Br', 'Municipio', 'Km',
-        'Classificacao Acidente', 'Tipo Acidente', 'Mortos', 'Feridos'
-    ]
-    
-    # 2. Verificar colunas
-    colunas_faltando = [col for col in colunas_necessarias if col not in df.columns]
-    if colunas_faltando:
-        st.warning(f"Mapa Fatais: Colunas faltando: {', '.join(colunas_faltando)}")
-        return None
-
-    # --- MUDANÇA PRINCIPAL 1: Filtrar APENAS por Vítimas Fatais ---
-    df_fatais = df[df['Classificacao Acidente'] == 'Com Vítimas Fatais'].copy()
-
-    # 3. Verificar se há dados APÓS o filtro
-    if df_fatais.empty:
-        st.warning("Não há dados de acidentes fatais para os filtros selecionados.")
-        return None
-
-    # 4. Limpar Nulos de coordenadas
-    df_mapa = df_fatais.dropna(subset=['Latitude', 'Longitude'])
-    if df_mapa.empty:
-        st.warning("Dados de acidentes fatais não possuem coordenadas válidas.")
-        return None
-
-    # 5. Criar o gráfico
-    st.subheader("Mapa de Ocorrências Fatais")
-    st.write("Cada ponto representa um acidente fatal, colorido pelo tipo.")
-    
-    fig = px.scatter_mapbox(
-        df_mapa,
-        lat='Latitude',
-        lon='Longitude',
-        
-        # --- MUDANÇA PRINCIPAL 2: Colorir por Tipo de Acidente ---
-        color='Tipo Acidente', 
-        
-        hover_name='Tipo Acidente',
-        hover_data={
-            'Br': True,
-            'Km': True,
-            'Municipio': True,
-            'Mortos': True,
-            'Feridos': True,
-            'Latitude': False,
-            'Longitude': False,
-        },
-        zoom=3.5,
-        height=700
-    )
-
-    fig.update_traces(marker=dict(size=10))
-    fig.update_layout(
-        mapbox_style="open-street-map",
-        mapbox_center={"lat": -14.2350, "lon": -51.9253},
-        legend=dict(
-            title_text='Tipo de Acidente Fatal',
-            orientation='h',
-            yanchor='bottom',
-            y=1.02,
-            xanchor='center',
-            x=0.5
-        ),
-        margin=dict(t=50, b=20, l=10, r=10)
-    )
-    return fig
 
 
 
-def grafico_heatmap_fatais(df):
-    df = df.copy()
-    df.columns = df.columns.str.strip().str.lower()
-    
-    must = ['latitude', 'longitude', 'classificacao acidente', 'mortos']
-    faltando = [c for c in must if c not in df.columns]
-    if faltando:
-        st.warning(f"Mapa de Calor: Colunas faltando: {', '.join(faltando)}")
-        return None
-    
-    df_fatais = df[df['classificacao acidente'].str.lower() == 'mortos'].copy()
-    if df_fatais.empty:
-        return None
-    
-    df_fatais['mortos'] = pd.to_numeric(df_fatais['mortos'], errors='coerce')
-    df_mapa = df_fatais.dropna(subset=['latitude','longitude','mortos'])
-    
-    # Limites aproximados para o Brasil
-    df_mapa = df_mapa[(df_mapa['latitude'].between(-33,5)) & (df_mapa['longitude'].between(-75,-32))]
-    if df_mapa.empty:
-        return None
-
-    fig = px.density_mapbox(
-        df_mapa, lat='latitude', lon='longitude', z='mortos',
-        radius=12, center=dict(lat=-14.2350, lon=-51.9253), zoom=3.8,
-        mapbox_style='carto-darkmatter',
-        hover_name=None,
-        hover_data={
-            'causa acidente': True,
-            'tipo acidente': True,
-            'mortos': True
-        },
-        height=650,
-        color_continuous_scale='Blues'
-    )
-    fig.update_layout(margin=dict(t=40,b=10,l=10,r=10), coloraxis_colorbar=dict(title='Mortos'))
-    return fig
 
 
 def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):

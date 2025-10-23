@@ -11,7 +11,7 @@ from utils.filtros import filtros_aplicados, filtro_mes_nome
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
 
-def graficos(df, df_original):
+def graficos(df):
 
     aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["📊 Quantitativos ","📉 Correlações", "📍 Localidades", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
@@ -19,31 +19,30 @@ def graficos(df, df_original):
     with aba1:
         c1, c2 = st.columns([3,2])
         with c1:
-            grafico_linha(df, 'Data Inversa', None, titulo="Acidentes por Ano/Mês")
+            grafico_linha(df, 'Data Inversa', None, titulo=f"**Total de acidentes no período:** {total_acidentes(df)}")
         with c2:
-            grafico_barra_sem_ordenar(df, 'Ano', titulo=f"Acidentes = {total_acidentes(df)}")
+            grafico_barra_sem_ordenar(df, 'Ano', titulo="Acidentes")
         
         c3, c4 = st.columns([3,2])
         with c3:
-            grafico_linha(df, 'Data Inversa', 'Mortos', titulo="Mortos por Ano/Mês")
+            grafico_linha(df, 'Data Inversa', 'Mortos', titulo=f"**Total de mortes no período:** {total_mortos(df)}")
         with c4:
-            grafico_barra_sem_ordenar(df, 'Ano', 'Mortos', titulo=f"Mortos = {total_mortos(df)}")
+            grafico_barra_sem_ordenar(df, 'Ano', 'Mortos', titulo="Mortos")
 
         c5, c6 = st.columns([3,2])
         with c5:
-            grafico_linha(df, 'Data Inversa', 'Feridos', titulo="Feridos por Ano/Mês")
+            grafico_linha(df, 'Data Inversa', 'Feridos', titulo=f"**Total de feridos no período:** {total_feridos(df)}")
         with c6:
-            grafico_barra_sem_ordenar(df, 'Ano','Feridos', titulo=f"Feridos = {total_feridos(df)}")
+            grafico_barra_sem_ordenar(df, 'Ano','Feridos', titulo="Feridos")
         c7, c8 = st.columns([3,2])
         with c7:
-            grafico_linha(df, 'Data Inversa', 'Veiculos', titulo="Veículos por Ano/Mês")
+            grafico_linha(df, 'Data Inversa', 'Veiculos', titulo=f"**Total de veículos envolvidos no período:** {total_veiculos(df)}")
         with c8:
-            grafico_barra_sem_ordenar(df,'Ano', 'Veiculos', titulo=f"Veículos = {total_veiculos(df)}")
-        c9, c10 = st.columns([3,2])
-        with c9:
-            grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="Veículos por Dia da Semana")
-        with c10:
-            grafico_barra_sem_ordenar(df,'Dia Semana', 'Veiculos', titulo=f"Dia da semana = {total_veiculos(df)}")
+            grafico_barra_sem_ordenar(df,'Ano', 'Veiculos', titulo="Veículos")
+        
+        
+        grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="**Total de veículos envolvidos pelos dias da semana no período:**")
+        
 
     with aba2:
         divisor()
@@ -154,24 +153,14 @@ def graficos(df, df_original):
         with c3:
             grafico_barra(df, 'Dia Semana', titulo="Dia da Semana")
         with c4:
-            grafico_coluna(df, 'Fase Dia', titulo="Fase do Dia")
+            grafico_coluna(df, 'Partes Dia', titulo="Partes do Dia")
         
         #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
         #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
         #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
 
     with aba5:
-        '''
-        c7, c8, c9 = st.columns(3)
-        with c7:
-           df = filtros_aplicados(df, 'Classificacao Acidente') 
-        with c8:
-           df = filtros_aplicados(df, 'Partes Dia')
-        with c9:
-            df = filtros_aplicados(df, 'Condicao Metereologica')
-
-        divisor()
-        '''
+        
         c1, c2 = st.columns(2)
         with c1:
             top_n = st.slider("Top N Tipo Acidente", min_value=5, max_value=16, value=5)
@@ -183,7 +172,7 @@ def graficos(df, df_original):
         divisor()
         c3, c4 = st.columns(2)
         with c3:
-            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condicao Metereologica")
+            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condição Meteorologica")
         with c4:
             #grafico_barra(df, 'Grupo Via', titulo="Tracado Via")
             grafico_barra(df, 'Fase Dia', titulo="Fase do Dia")
@@ -193,7 +182,7 @@ def graficos(df, df_original):
         # Grafico de radar interativo
         # Dando opcoes para o usuario escolher
         colunas_categoricas = ['Condicao Metereologica', 'Fase Dia', 'Tipo Acidente', 'Classificacao Acidente',
-                               'Grupo Via', 'Região', 'Uf']
+                               'Grupo Via', 'Região', 'Uf', 'Partes Dia', 'Causa Grupo', 'Condicao Climatica Grupo']
         colunas_numericas = ['Ano', 'Mês', 'Mortos', 'Feridos', 'Veiculos', 'Dia Da Semana']
 
         # Filtro para categoria (eixo angular)
@@ -264,16 +253,15 @@ def graficos(df, df_original):
         st.header("📘 Metodologia da Análise")
         st.markdown("Abaixo estão os principais critérios e tratamentos aplicados aos dados utilizados neste painel:")
 
-        with st.expander("🧹 **Tratamentos aplicados aos dados**"):
+        with st.expander("🧹 **Principais tratamentos aplicados aos dados/Enriquecimento da fonte de dados**"):
             st.markdown("""
-            - Exclusão de registros **sem mortos e feridos** (mantidos apenas acidentes com vítimas);  
             - Junção das colunas **Feridos Graves** e **Feridos Leves** em `Feridos`;  
-            - Remoção da coluna `Ilesos`, por não representar gravidade no evento;  
-            - Padronização de textos (nomes de municípios, causas, condições climáticas, etc.);  
-            - Junção das colunas `Município` e `UF` → `Município - UF`.  
+            - Remoção das colunas ['delegacia', 'regional', 'uop', 'id', 'ignorados', 'ilesos', 'Estado' ], por não representar gravidade no evento;  
+            - Criação das colunas ['Ano', 'Mês','Dia', 'Partes_Dia', 'Região'] para futura aplicação de machine learning;  
+            - Junção das colunas `Município` e `UF` → `Município - UF`.
             """)
 
-        with st.expander("🧠 **Agrupamento das causas dos acidentes**"):
+        with st.expander("🧠 **Agrupamento da coluna 'Causas_Acidentes**"):
             st.markdown("""
             - 🚗 **Condutor - Falha humana:** Reação tardia, contramão, ultrapassagem, velocidade, celular, etc.  
             - 💤 **Condutor - Fadiga / Álcool / Drogas / Saúde:** Sono, ingestão de álcool, mal súbito.  
@@ -285,10 +273,35 @@ def graficos(df, df_original):
             - ❓ **Outros / Indefinidos:** Causas não especificadas.  
             """)
 
+        with st.expander("⏰ **Agrupamento da coluna 'Horario'**"):
+            st.markdown("""
+            - 🌅 **06:00 às 11:59 - Manhã**  
+            - 🌇 **12:00 às 17:59 - Tarde**  
+            - 🌙 **18:00 às 23:59 - Noite**  
+            - 🛌 **00:00 às 05:59 - Madrugada**  
+            """)
+
+        with st.expander("🧠 **Agrupamento da coluna 'condicao_metereologica'**"):
+            st.markdown("""
+            - ☀️ **Bom:** Céu claro, sol, nublado.   
+            - 🌧️ **Chuva:** Chuva, garoa, chuvisco.  
+            - 🌫️ **Outros:** Vento, nevoeiro, granizo, neve, ignorado.  
+            """)  
+
+        with st.expander("🛣️ **Agrupamento da coluna 'Grupo_via'**"):
+            st.markdown("""
+            - 🟢 **Reta:** Trechos retos da via.  
+            - ↗️ **Aclive:** Trechos com subida acentuada.  
+            - ↘️ **Declive:** Trechos com descida acentuada.  
+            - 🔄 **Curva:** Trechos curvos da via, incluindo curvas fechadas e leves.  
+            - 🏗️ **Viaduto:** Pontes, elevados ou viadutos.  
+            - ❓ **Outros:** Qualquer outro tipo de trecho não classificado acima.  
+            """)
+
         with st.expander("📆 **Período e fonte dos dados**"):
             st.markdown("""
             - Dados públicos da **Polícia Rodoviária Federal (PRF)**.  
-            - Período analisado: **2023 e 2024**.  
+            - Período analisado: **2021 a Ago/2025**.  
             - Escopo: acidentes com vítimas (mortos e/ou feridos).  
             """)
 
@@ -303,8 +316,8 @@ def graficos(df, df_original):
 
 
 
-def mainGraficos(df, df_original):
+def mainGraficos(df):
     divisor()
-    # df_filtrado e o df_filtrado_linha para a função graficos e df para valores preditivos para evitar ação de filtros nas variáveis
-    graficos(df, df_original) 
+    
+    graficos(df) 
     #divisor()

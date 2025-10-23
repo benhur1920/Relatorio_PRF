@@ -129,28 +129,18 @@ def criacao_navegacao_e_filtros():
     c1, c2, c3, c4 = st.columns(4,gap="small")
 
     with c1.container(border=True):
-        st.metric("Acidentes", total_acidentes(df_filtrado))
+        st.metric("🚨 Acidentes", total_acidentes(df_filtrado))
 
     with c2.container(border=True):   
-        st.metric("Mortos", total_mortos(df_filtrado))
+        st.metric("💀 Mortos", total_mortos(df_filtrado))
 
     with c3.container(border=True):
-        st.metric("Feridos", total_feridos(df_filtrado))
+        st.metric("🩹 Feridos", total_feridos(df_filtrado))
             
     with c4.container(border=True):
-        st.metric("Veiculos", total_veiculos(df_filtrado))
+        st.metric("🚗 Veiculos", total_veiculos(df_filtrado))
 
-   # with c5.container(border=True):
-       # st.metric("Ilesos", total_ilesos(df_filtrado))  
-
-    # DataFrame para gráfico de linha
-    #df_filtrado_linha = df.copy()
-    #for col in ['Tipo_Imovel','Tipo_Ocupacao','Região','Bairro']:
-        #key = f'main_filtro_{col}'
-        #if key in st.session_state and st.session_state[key]:
-           # df_filtrado_linha = df_filtrado_linha[df_filtrado_linha[col].isin(st.session_state[key])]
-
-    #totalLinhas = df_filtrado.shape[0]
+   
 
     # Conteúdo principal
     if selected == "Sobre":
@@ -158,7 +148,7 @@ def criacao_navegacao_e_filtros():
 
     elif selected == "Painéis":
         #df_filtrado_linha['Ano'] = df_filtrado_linha['Ano'].astype(str)
-        paines.mainGraficos(df_filtrado, df)
+        paines.mainGraficos(df_filtrado)
     else:
         dataframe.mainDataframe(df_filtrado)
 
