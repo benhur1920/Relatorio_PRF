@@ -44,7 +44,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     # Gráfico de barras com cor fixa e tooltip com percentual
     bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
         x=alt.X(coluna_x, type='nominal',
-                sort=alt.EncodingSortField(field="Total", order="descending")),
+                sort=alt.EncodingSortField(field="Total", order="descending"), title=None),
         
         # --- MODIFICAÇÃO APLICADA AQUI ---
         y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain), axis=None), # axis=None - remove o nome e valor da coluna y
