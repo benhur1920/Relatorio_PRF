@@ -3,7 +3,7 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
 from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater,  grafico_linha,  
-                            grafico_heatmap, grafico_radar, grafico_treemap)
+                            grafico_heatmap, grafico_radar, grafico_treemap, grafico_coluna, grafico_barra_empilhada)
 from utils.filtros import filtros_aplicados
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
@@ -265,7 +265,7 @@ def graficos(df):
         #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
         #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
         """
-        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico treemap para análise")
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um Gráfico Treemap ou Gráfico de Pizza para análise")
     # --- Definição de colunas ---
         colunas_categoricas = ['Tipo Pista', 'Condicao Climatica Grupo', 'Fase Dia', 'Partes Dia']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
@@ -298,8 +298,46 @@ def graficos(df):
 
             # --- Título dinâmico ---
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
+        """
 
-        # --- Chamada do gráfico de barras ---
+        # --- Seletor de tipo de mapa ---
+        tipo_mapa = st.radio(
+            "Escolha o tipo de gráfico",
+            ["Treemap", "Pizza", "Coluna", "Barra Empilhada"],
+            horizontal=True
+        )
+
+        # Define qual coluna e título usar
+        if tipo_mapa == "Treemap":
+            try:
+                grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de treemap: {e}")
+        elif tipo_mapa == "Pizza":
+            try:
+                grafico_pizza(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de treemap: {e}")
+
+        elif tipo_mapa == "Barra Empilhada":
+            try:
+                grafico_barra_empilhada(
+                df=df_temp,
+                coluna_x=coluna_categoria,  # eixo X
+                coluna_y=coluna_valor,      # a coluna com valores
+                coluna_grupo=coluna_grupo,  # empilhamento
+                titulo=titulo,
+                top_n=top_n
+            )
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de treemap: {e}")
+        else:
+            try:
+                grafico_coluna(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de treemap: {e}")
+        """
+        
         try:
             #top_n = st.slider("Top N para Estados, Municípios e Brs - no máximo 30", min_value=5, max_value=30, value=5)
             grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)

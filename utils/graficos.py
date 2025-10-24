@@ -32,7 +32,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     # Ordena para exibir barras em ordem decrescente
     total = total.sort_values('Total', ascending=False)
-
+    total['Total_str'] = formatar_milhar(total['Total'])
     # Calcula percentual
     soma_total = total['Total'].sum()
     total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
@@ -45,7 +45,7 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
         total,
         x=coluna_x,
         y='Total',
-        text='Total',
+        text='Total_str',
         hover_data={'Percentual': True, 'Total': True}
     )
 
@@ -92,9 +92,11 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
 
     # 3. Calcula percentual
     total['percent'] = total['Total'] / total['Total'].sum()
+    
 
     # Ordena do maior para o menor
     total = total.sort_values('Total', ascending=False)
+    
 
     # --- Gráfico de Pizza ---
     base = alt.Chart(total).encode(
@@ -252,14 +254,14 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None, freq=Non
 
     # Tema Plotly automático
     tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
-
+    total['Total_str'] = formatar_milhar(total['Total'])
     # Criação do gráfico
     fig = px.line(
         total,
         x='Eixo',
         y='Total',
         markers=True,
-        text='Total',
+        text='Total_str',
         labels={'Total': 'Total', 'Eixo': coluna_x},
         title=titulo
     )
@@ -446,3 +448,131 @@ def grafico_heatmap(df, coluna_valor, titulo):
     fig.update_traces(opacity=0.85)
 
     return fig
+
+
+def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
+    """
+    Gráfico de colunas Plotly estilo Power BI, limpo:
+    - Colunas verticais
+    - Rótulos acima das colunas (com ponto de milhar)
+    - Tooltip com percentual e valor
+    - Tema light/dark automático
+    """
+
+    # Subtítulo no Streamlit
+    if titulo:
+        st.subheader(titulo)
+
+    # Preparação dos dados
+    if coluna_y is None:
+        total = df.groupby(coluna_x).size().reset_index(name='Total')
+    else:
+        total = df.groupby(coluna_x)[coluna_y].sum().reset_index(name='Total')
+
+    # Limita categorias
+    if top_n is not None:
+        total = total.nlargest(top_n, 'Total')
+
+    # Ordena para exibir colunas em ordem decrescente
+    total = total.sort_values('Total', ascending=False)
+
+    # Formata valor e percentual
+    soma_total = total['Total'].sum()
+    total['Total_str'] = total['Total'].apply(formatar_milhar)
+    total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
+
+    # Tema automático
+    tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
+
+    # Criação do gráfico
+    fig = px.bar(
+        total,
+        x=coluna_x,
+        y='Total',
+        text='Total_str',
+        color='Total',
+        color_continuous_scale='Blues',
+        hover_data={'Percentual': True, 'Total': True},
+    )
+
+    # Ajustes visuais
+    fig.update_traces(
+        textposition='outside',   # valores acima das colunas
+        textfont=dict(size=14),
+    )
+
+    fig.update_layout(
+        template=tema,
+        yaxis=dict(title=None, showticklabels=False),
+        xaxis=dict(title=None, showticklabels=True, categoryorder='total descending'),
+        showlegend=False,
+        margin=dict(t=25, l=0, r=0, b=0),
+        font=dict(size=13),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def grafico_barra_empilhada(df, coluna_x, coluna_y, coluna_grupo, titulo=None, top_n=None):
+    """
+    Gráfico de barras empilhadas Plotly estilo Power BI:
+    - coluna_x: eixo X (categorias)
+    - coluna_y: valor numérico (Mortos, Feridos, etc.)
+    - coluna_grupo: segmento da barra (empilhamento)
+    - Rótulos acima das barras totais
+    - Tooltip com valor e percentual
+    - Tema light/dark automático
+    """
+
+    # Subtítulo no Streamlit
+    if titulo:
+        st.subheader(titulo)
+
+    # Agrupamento dos dados
+    total = df.groupby([coluna_x, coluna_grupo])[coluna_y].sum().reset_index(name='Total')
+
+    # Limita Top N categorias
+    if top_n is not None:
+        top_cats = total.groupby(coluna_x)['Total'].sum().nlargest(top_n).index
+        total = total[total[coluna_x].isin(top_cats)]
+
+    # Calcula percentual por barra
+    total_soma = total.groupby(coluna_x)['Total'].transform('sum')
+    total['Percentual'] = ((total['Total'] / total_soma) * 100).round(1)
+
+    # Formata valor com ponto de milhar
+    total['Total_str'] = total['Total'].apply(formatar_milhar)
+
+    # Tema automático
+    tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
+
+    # Criação do gráfico empilhado
+    fig = px.bar(
+        total,
+        x=coluna_x,
+        y='Total',
+        color=coluna_grupo,
+        text='Total_str',
+        color_discrete_sequence=px.colors.qualitative.Set2,
+        hover_data={'Percentual': True, 'Total': True},
+    )
+
+    # Ajustes visuais
+    fig.update_traces(
+        textposition='inside',   # rótulos dentro das barras
+        textfont=dict(size=12),
+    )
+
+    fig.update_layout(
+        template=tema,
+        yaxis=dict(title=None, showticklabels=False),
+        xaxis=dict(title=None, showticklabels=True, categoryorder='total descending'),
+        barmode='stack',  # empilhamento
+        showlegend=True,
+        margin=dict(t=25, l=0, r=0, b=0),
+        font=dict(size=13),
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+    
+    
