@@ -362,6 +362,7 @@ def graficos(df):
     
     
     with aba6:
+        """
         st.header("Análise Geográfica de Acidentes")
 
         c1, c2 = st.columns(2, gap="large")
@@ -388,6 +389,7 @@ def graficos(df):
         else:
             coluna_valor = "Veiculos"
             titulo = "Mapa de Calor - Total de Acidentes (por veículos envolvidos)"
+        
 
         # Gera o gráfico
         fig = grafico_heatmap(df, coluna_valor, titulo)
@@ -396,6 +398,57 @@ def graficos(df):
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("Não foi possível gerar o mapa. Verifique se há dados válidos.")
+        """
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um mapa de calor dinâmico")
+
+        # --- Cópia temporária do dataframe ---
+        df_temp = df.copy()
+
+        # --- Seletor de tipo de mapa ---
+        tipo_mapa = st.radio(
+            "Escolha o indicador para visualizar:",
+            ["Mortes", "Feridos", "Acidentes"],
+            horizontal=True
+        )
+
+        # Define qual coluna e título usar
+        if tipo_mapa == "Mortes":
+            coluna_valor = "Mortos"
+            titulo = "Mapa de Calor - Mortes em Rodovias Federais"
+        elif tipo_mapa == "Feridos":
+            coluna_valor = "Feridos"
+            titulo = "Mapa de Calor - Feridos em Rodovias Federais"
+        else:
+            coluna_valor = "Veiculos"
+            titulo = "Mapa de Calor - Total de Acidentes (por veículos envolvidos)"
+
+        # --- Slider para reduzir a quantidade de pontos ---
+        top_n = st.slider(
+            "Selecione o número de BRs para exibir (5 a 15):",
+            min_value=5,
+            max_value=15,
+            value=10
+        )
+
+        try:
+            # --- Ordena e filtra as BRs com mais ocorrências ---
+            if "Br" in df_temp.columns and coluna_valor in df_temp.columns:
+                top_brs = (
+                    df_temp.groupby("Br")[coluna_valor]
+                    .sum()
+                    .nlargest(top_n)
+                    .index
+                )
+                df_temp = df_temp[df_temp["Br"].isin(top_brs)]
+
+            # --- Chama a função de mapa de calor ---
+            fig = grafico_heatmap(df_temp, coluna_valor, titulo)
+            if fig is not None:
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("Não há dados suficientes para gerar o mapa.")
+        except Exception as e:
+            st.error(f"Erro ao gerar o mapa de calor: {e}")
 
     with aba7:
         

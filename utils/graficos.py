@@ -513,9 +513,10 @@ def grafico_scater(marcacao, df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_b
 
 def grafico_heatmap(df, coluna_valor, titulo):
     """
-    Cria um mapa de calor dinâmico (Mortos, Feridos ou Acidentes).
-    Mostra no tooltip: Região, UF, Município, BR e KM.
+    Cria um mapa de calor dinâmico (Mortos, Feridos ou Acidentes),
+    com zoom, contraste e suavização otimizados.
     """
+
 
     if df is None or df.empty:
         return None
@@ -524,37 +525,44 @@ def grafico_heatmap(df, coluna_valor, titulo):
     if not colunas_necessarias.issubset(df.columns):
         return None
 
-    # Remove linhas sem coordenadas ou valor
-    df = df.dropna(subset=['Latitude', 'Longitude', coluna_valor])
-    if df.empty:
-        return None
-
-    # Converte colunas numéricas
+    # Limpeza e conversões 
+    df = df.dropna(subset=['Latitude', 'Longitude', coluna_valor]).copy()
     df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
     df['Longitude'] = pd.to_numeric(df['Longitude'], errors='coerce')
     df[coluna_valor] = pd.to_numeric(df[coluna_valor], errors='coerce')
     df['Km'] = pd.to_numeric(df.get('Km', 0), errors='coerce')
+    df = df.dropna(subset=['Latitude', 'Longitude', coluna_valor])
 
-    # Remove linhas onde o valor é NaN após conversão
-    df = df.dropna(subset=[coluna_valor])
     if df.empty:
         return None
 
-    # Escolhe escala de cores e radius
+    #  Ajuste de escala e saturação 
+    valor_95 = np.percentile(df[coluna_valor], 95)
+    range_color = [0, valor_95]
+
     if coluna_valor == "Mortos":
         escala = "Reds"
-        raio_mapa = 15  # menor do que 30
-        range_color = [0, max(5, df[coluna_valor].max())]  # ajusta intensidade
     elif coluna_valor == "Feridos":
-        escala = "Greys"
-        raio_mapa = max(10, min(30, int(1000 / (len(df) ** 0.5))))
-        range_color = [0, df[coluna_valor].max()]
+        escala = "Purples"
     else:
         escala = "Blues"
-        raio_mapa = max(10, min(30, int(1000 / (len(df) ** 0.5))))
-        range_color = [0, df[coluna_valor].max()]
 
-    # Cria o mapa de calor
+    #  Ajuste dinâmico de raio e zoom 
+    n_pontos = len(df)
+    if n_pontos > 15000:
+        raio_mapa = 6
+        zoom = 3.5
+    elif n_pontos > 5000:
+        raio_mapa = 8
+        zoom = 4
+    elif n_pontos > 1000:
+        raio_mapa = 12
+        zoom = 4.3
+    else:
+        raio_mapa = 16
+        zoom = 4.8  # 🔍 mais próximo e detalhado
+
+    #  Geração do mapa 
     fig = px.density_mapbox(
         df,
         lat='Latitude',
@@ -562,20 +570,37 @@ def grafico_heatmap(df, coluna_valor, titulo):
         z=coluna_valor,
         radius=raio_mapa,
         hover_data={
-            'Região': True,
-            'Uf': True,
-            'Municipio': True,
-            'Br': True,
-            'Km': ':.1f',
-            coluna_valor: True  # garante que Mortos/Feridos apareçam no tooltip
+            'Região': True if 'Região' in df.columns else False,
+            'Uf': True if 'Uf' in df.columns else False,
+            'Municipio': True if 'Municipio' in df.columns else False,
+            'Br': True if 'Br' in df.columns else False,
+            'Km': ':.1f' if 'Km' in df.columns else False,
+            coluna_valor: ':.0f'
         },
-        center=dict(lat=-15.78, lon=-52.0),
-        zoom=3,
-        mapbox_style='carto-positron',
+        center=dict(lat=-14.2, lon=-54.0),  # foco no centro do Brasil
+        zoom=zoom,
+        mapbox_style="carto-positron",  # mais leve e compatível
         color_continuous_scale=escala,
         range_color=range_color,
         title=titulo
     )
 
-    fig.update_layout(height=600, margin=dict(l=0, r=0, t=50, b=0))
+    # --- Aparência geral ---
+    fig.update_layout(
+        height=650,
+        margin=dict(l=0, r=0, t=60, b=0),
+        coloraxis_colorbar=dict(
+            title=coluna_valor,
+            thicknessmode="pixels",
+            thickness=18,
+            lenmode="fraction",
+            len=0.7,
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+
+    # Contraste e opacidade para nitidez
+    fig.update_traces(opacity=0.85)
+
     return fig
