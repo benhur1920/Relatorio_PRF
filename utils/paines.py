@@ -230,7 +230,16 @@ def graficos(df):
 
         # --- Chamada do gráfico de barras ---
         try:
-            top_n = st.slider("Top N para Estados, Municípios e Brs - no máximo 30", min_value=5, max_value=30, value=5)
+            if coluna_categoria != "Região":
+                top_n = st.slider(
+                "Top N para Estados, Municípios e Brs - no máximo 30",
+                min_value=5,
+                max_value=30,
+                value=5
+            )
+            else:
+                top_n = 5  # só 5 regiões, não precisa do slider
+
             grafico_barra(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
         except Exception as e:
             st.error(f"Erro ao gerar o gráfico de barras: {e}")
