@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
-from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater, grafico_coluna, grafico_linha,  
+from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater,  grafico_linha,  
                             grafico_heatmap, grafico_radar, grafico_treemap)
 from utils.filtros import filtros_aplicados
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
@@ -10,7 +10,7 @@ from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, 
 
 def graficos(df):
 
-    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Correlações", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
+    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Analise relaçional", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:

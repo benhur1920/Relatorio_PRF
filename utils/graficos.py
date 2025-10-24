@@ -3,20 +3,20 @@ import altair as alt
 import plotly.express as px
 import pandas as pd
 import numpy as np
+from utils.totalizadores import formatar_milhar
 
 
-
-
-# Gráfico de barras
 
 def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     """
-    Cria gráfico Altair dinâmico, com texto sobre as barras e percentual no tooltip.
-    - coluna_x: eixo X (Ano, Mês, Região, etc.)
-    - coluna_y: soma de valores (Mortos, Feridos, Veiculos) ou None para contar linhas
-    - top_n: para limitar categorias
-    - titulo: título do gráfico
+    Gráfico de barras Plotly estilo Power BI, limpo:
+    - Sem títulos nos eixos
+    - Rótulos acima das barras
+    - Tooltip com percentual
+    - Tema light/dark automático
     """
+
+    # Subtítulo no Streamlit
     if titulo:
         st.subheader(titulo)
 
@@ -26,202 +26,46 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     else:
         total = df.groupby(coluna_x)[coluna_y].sum().reset_index(name='Total')
 
+    # Limita categorias
     if top_n is not None:
         total = total.nlargest(top_n, 'Total')
 
+    # Ordena para exibir barras em ordem decrescente
     total = total.sort_values('Total', ascending=False)
 
-    # Define o valor máximo para o eixo Y
-    if total.empty:
-        max_valor = 0
-    else:
-        max_valor = total['Total'].max()
-    
-    # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
-    # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
-    y_domain = [0, max_valor * 1.1] 
-    
     # Calcula percentual
-    soma_total = total['Total'].sum() if len(total) > 0 else 0
+    soma_total = total['Total'].sum()
     total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
 
-    # Gráfico de barras com cor fixa e tooltip com percentual
-    bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
-        x=alt.X(coluna_x, type='nominal',
-                sort=alt.EncodingSortField(field="Total", order="descending"), title=None),
-        
-        
-        y=alt.Y('Total:Q', scale=alt.Scale(domain=y_domain), axis=None), # axis=None - remove o nome e valor da coluna y
-        
-        tooltip=[
-            alt.Tooltip(coluna_x, title=coluna_x),
-            alt.Tooltip('Total:Q', title='Total', format=','),
-            alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
-        ]
+    # Tema automático
+    tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
+
+    # Criação do gráfico
+    fig = px.bar(
+        total,
+        x=coluna_x,
+        y='Total',
+        text='Total',
+        hover_data={'Percentual': True, 'Total': True}
     )
 
-    # Texto acima das barras mostrando apenas o total
-    text = bar.mark_text(
-        align='center',
-        baseline='bottom',
-        dy=-5, # Move o texto 5 pixels para CIMA (fora da barra)
-        color='black'
-    ).encode(
-        text=alt.Text('Total:Q', format=',')
+    # Ajustes visuais
+    fig.update_traces(
+        textposition='outside',  # rótulos acima das barras
+        marker_color='#1f77b4'
+    )
+    fig.update_layout(
+        template=tema,
+        yaxis=dict(title=None, showticklabels=False),
+        xaxis=dict(title=None, showticklabels=True, categoryorder='total descending'),
+        showlegend=False
     )
 
-    chart = alt.layer(bar, text).properties(width='container')
-    return st.altair_chart(chart, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
-# Grafico de barras sem ordenacao
 
-def grafico_barra_sem_ordenar(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
-    """
-    Cria gráfico Altair dinâmico, com texto sobre as barras e percentual no tooltip.
-    - coluna_x: eixo X (Ano, Mês, Região, etc.)
-    - coluna_y: soma de valores (Mortos, Feridos, Veiculos) ou None para contar linhas
-    - top_n: para limitar categorias
-    - titulo: título do gráfico
-    """
-    if titulo:
-        st.subheader(titulo)
 
-    # Preparação dos dados
-    if coluna_y is None:
-        total = df.groupby(coluna_x).size().reset_index(name='Total')
-    else:
-        total = df.groupby(coluna_x)[coluna_y].sum().reset_index(name='Total')
 
-    if top_n is not None:
-        total = total.nlargest(top_n, 'Total')
-
-    # Define o valor máximo para o eixo Y
-    if total.empty:
-        max_valor = 0
-    else:
-        max_valor = total['Total'].max()
-    
-
-    # Adiciona um "respiro" (ex: 10%) no topo do eixo Y para o texto caber
-    # Ajuste 1.1 (10%) se precisar de mais ou menos espaço
-    y_domain = [0, max_valor * 1.1] 
-    
-
-    # Calcula percentual
-    soma_total = total['Total'].sum() if len(total) > 0 else 0
-    total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
-    
-   # Gráfico de barras com cor fixa e tooltip com percentual
-    bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
-        x=alt.X(coluna_x, type='nominal'),
-        y=alt.Y('Total:Q',
-                scale=alt.Scale(domain=y_domain),
-                axis=alt.Axis(labels=False, ticks=False, domain=False, title=None)
-            ),
-        tooltip=[
-            alt.Tooltip(coluna_x, title='Categoria'),
-            alt.Tooltip('Total:Q', title='Total', format=','),
-            alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
-        ]
-    )
-
-    # Texto acima das barras mostrando apenas o total
-    text = bar.mark_text(
-        align='center',
-        baseline='bottom',
-        dy=-5,
-        color='black'
-    ).encode(
-        text=alt.Text('Total:Q', format=',')
-    )
-
-    chart = alt.layer(bar, text).properties(width='container')
-    return st.altair_chart(chart, use_container_width=True)
-
-# Gráfico de colunas
-
-def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
-    """
-    Cria gráfico Altair de BARRAS HORIZONTAIS simples.
-    - coluna_x: eixo Y (Categoria: Ano, Mês, Região, etc.)
-    - coluna_y: soma de valores (Eixo X: Mortos, Feridos, etc.) ou None para contar linhas
-    - top_n: limita número de categorias exibidas
-    - titulo: título opcional do gráfico
-    """
-    if titulo:
-        st.subheader(titulo)
-
-    # --- Prepara dados ---
-    if coluna_y is None:
-        total = df.groupby(coluna_x).size().reset_index(name='Total')
-    else:
-        total = df.groupby(coluna_x)[coluna_y].sum().reset_index(name='Total')
-
-    if top_n is not None:
-        total = total.nlargest(top_n, 'Total')
-
-    total = total.sort_values('Total', ascending=True)
-
-    
-    # Define o valor máximo para o eixo X
-    if total.empty:
-        max_valor = 0
-    else:
-        max_valor = total['Total'].max()
-    
-    # Adiciona um "respiro" (ex: 15%) à direita no eixo X para o texto caber
-    # Você pode ajustar 1.15 para 1.2 (20%) se o texto for muito longo
-    x_domain = [0, max_valor * 1.15] 
-    
-
-    total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1)
-
-    # --- Tema geral ---
-    alt.themes.enable('none')
-    alt.data_transformers.disable_max_rows()
-
-    # --- Gráfico principal ---
-    bar = alt.Chart(total).mark_bar(color='#1f77b4').encode(
-        x=alt.X('Total:Q',
-                title='',
-                axis=alt.Axis(labels=False, ticks=False, domain=False),
-                # --- MODIFICAÇÃO APLICADA AQUI ---
-                scale=alt.Scale(domain=x_domain)
-        ),
-        y=alt.Y(coluna_x,
-                sort=alt.EncodingSortField(field="Total", order="descending"),
-                title='',
-                axis=alt.Axis(labelFontSize=12, labelLimit=250)
-        ),
-        tooltip=[
-            alt.Tooltip(coluna_x, title='Categoria'),
-            alt.Tooltip('Total:Q', title='Total', format=','),
-            alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
-        ]
-    )
-
-    # --- Texto sobre as barras ---
-    text = bar.mark_text(
-        align='left',
-        baseline='middle',
-        dx=6, # Move 6 pixels para DIREITA (para fora da barra)
-        fontSize=12,
-        color='black'
-    ).encode(
-        text=alt.Text('Total:Q', format=',')
-    )
-
-    # --- Junta gráfico e texto ---
-    chart = (bar + text).properties(
-        width='container',
-        height=max(300, len(total) * 25)
-    ).configure_view(
-        strokeWidth=0
-    ).configure_axis(
-        grid=False
-    )
-
-    return st.altair_chart(chart, use_container_width=True)
 
 # Grafico de pizza
 
@@ -290,10 +134,10 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
 
 def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=None):
     """
-    Cria gráfico Treemap interativo com Plotly Express em TONS DE AZUL.
+    Cria gráfico Treemap interativo com Plotly Express em tons de azul.
     - coluna_categoria: As caixas do treemap (Região, Tipo Acidente, etc.)
     - coluna_valor: O tamanho das caixas (Mortos, Feridos) ou None para contar linhas
-    - top_n: para limitar categorias
+    - top_n: limita categorias
     - titulo: título do gráfico
     """
     if titulo:
@@ -315,128 +159,126 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
     # 4. Calcula percentual
     total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1)
 
-    # 5. Criação do Treemap
+    # 5. Cria coluna formatada com ponto de milhar
+    total['Total_str'] = formatar_milhar(total['Total'])
+
+    # 6. Texto dentro do bloco: valor + percentual
+    total['Texto'] = total['Total_str'] + " (" + total['Percentual'].astype(str) + "%)"
+
+    # 7. Criação do Treemap
     fig = px.treemap(
         total,
         path=[coluna_categoria],
         values='Total',
         color='Total',
-        color_continuous_scale='Blues',  # tons de azul
-        hover_name=coluna_categoria,
-        hover_data={
-            'Total': ':.0f',
-            'Percentual': ':.1f'  # mostra percentual no tooltip
-        }
+        color_continuous_scale='Blues'
     )
 
-    # 6. Ajustes de layout
+    # 8. Exibir o valor dentro do bloco e desativar tooltip
+    fig.update_traces(
+        texttemplate="%{label}<br>%{customdata[0]}",
+        textinfo="label+text",
+        customdata=total[['Texto']],
+        hoverinfo='skip',     # remove completamente o hover
+        hovertemplate=None
+    )
+
+    # 9. Ajustes de layout
     fig.update_layout(
         margin=dict(t=25, l=0, r=0, b=0),
         font=dict(size=14),
         coloraxis_colorbar=dict(title="Total")
     )
 
-    # 7. Renderiza no Streamlit
+    # 10. Renderiza no Streamlit
     return st.plotly_chart(fig, use_container_width=True)
 
-# Grafico de linha
 
-def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
+def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None, freq=None):
     """
-    Cria gráfico de linha Altair dinâmico.
-    - Se coluna_x for data, agrupa por Mês/Ano.
-    - Se coluna_x for categoria, agrupa por categoria.
-    - Tooltip habilitado, SEM rótulos nos pontos.
+    Gráfico de linha Plotly estilo Power BI.
+    - freq: frequência para preencher valores ausentes ('H', 'D', 'MS', 'M', etc).
+    - Adapta-se automaticamente ao tema do Streamlit.
+    - Exibe rótulos e tooltips.
     """
+
     if titulo:
         st.subheader(titulo)
 
-    # 1. Verifica se a coluna_x é do tipo datetime
-    try:
-        is_date_column = pd.api.types.is_datetime64_any_dtype(df[coluna_x])
-    except KeyError:
+    # Verifica se coluna_x existe
+    if coluna_x not in df.columns:
         st.error(f"Erro: Coluna '{coluna_x}' não encontrada.")
         return
 
-    # 2. Agrupa os dados
+    # Detecta tipo de coluna
+    is_date_column = pd.api.types.is_datetime64_any_dtype(df[coluna_x])
     if is_date_column:
-        # --- SE FOR DATA: Agrupa por Mês (MS = Month Start) ---
-        grouper_mes = pd.Grouper(key=coluna_x, freq='MS')
+        df[coluna_x] = pd.to_datetime(df[coluna_x])
+
+    # Agrupamento
+    if is_date_column:
+        freq = freq or 'MS'  # padrão mês
         if coluna_y is None:
-            total = df.groupby(grouper_mes).size().reset_index(name='Total')
+            total = df.groupby(pd.Grouper(key=coluna_x, freq=freq)).size().reset_index(name='Total')
         else:
-            total = df.groupby(grouper_mes)[coluna_y].sum().reset_index(name='Total')
+            total = df.groupby(pd.Grouper(key=coluna_x, freq=freq))[coluna_y].sum().reset_index(name='Total')
+
+        # Preenche todos os valores do eixo
+        todas_datas = pd.date_range(start=total[coluna_x].min(),
+                                    end=total[coluna_x].max(),
+                                    freq=freq)
+        total = pd.merge(pd.DataFrame({coluna_x: todas_datas}),
+                         total,
+                         on=coluna_x,
+                         how='left')
+        total['Total'] = total['Total'].fillna(0)
+        total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1) if total['Total'].sum() else 0
+        # Formatação Mês/Ano ou hora
+        if freq in ['H', 'h']:
+            total['Eixo'] = total[coluna_x].dt.strftime('%H:%M')
+        else:
+            total['Eixo'] = total[coluna_x].dt.strftime('%b/%Y')
+
     else:
-        # --- SE FOR CATEGORIA: Mantém a lógica original ---
         if coluna_y is None:
             total = df.groupby(coluna_x).size().reset_index(name='Total')
         else:
             total = df.groupby(coluna_x)[coluna_y].sum().reset_index(name='Total')
+        total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1) if total['Total'].sum() else 0
+        if top_n:
+            total = total.nlargest(top_n, 'Total')
+        total = total.sort_values(coluna_x)
+        total['Eixo'] = total[coluna_x].astype(str)
 
-    # Limite de categorias (NÃO aplicar para datas, senão quebra a linha do tempo)
-    if top_n is not None and not is_date_column:
-        total = total.nlargest(top_n, 'Total')
+    # Tema Plotly automático
+    tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
 
-    # Ordena pelo eixo X (funciona para datas e categorias)
-    total = total.sort_values(by=coluna_x)
-
-    # Calcula percentual
-    soma_total = total['Total'].sum() if len(total) > 0 else 0
-    total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
-
-    # 3. Define a formatação do Eixo X e Tooltip
-    if is_date_column:
-        # Formatação para datas (ex: Jan/2025)
-        x_axis = alt.X(coluna_x, 
-                       type='temporal', 
-                       title='Mês/Ano',
-                       axis=alt.Axis(format="%b/%Y"))
-        tooltip_x = alt.Tooltip(coluna_x, title='Mês/Ano', format="%b/%Y")
-    else:
-        # Formatação para categorias (como estava antes)
-        x_axis = alt.X(coluna_x, type='nominal', sort=None, title=coluna_x)
-        tooltip_x = alt.Tooltip(coluna_x, title='Categoria')
-
-    # 4. Gráfico em Camadas
-    
-    # 4.1. Base do Gráfico (Define os dados, eixos e tooltips)
-    base = alt.Chart(total).encode(
-        x=x_axis,
-        y=alt.Y('Total:Q', title=None),
-        tooltip=[
-            tooltip_x,
-            alt.Tooltip('Total:Q', title='Total', format=','), # format=',' para 1,000
-            alt.Tooltip('Percentual:Q', title='Percentual (%)', format='.1f')
-        ]
+    # Criação do gráfico
+    fig = px.line(
+        total,
+        x='Eixo',
+        y='Total',
+        markers=True,
+        text='Total',
+        labels={'Total': 'Total', 'Eixo': coluna_x},
+        title=titulo
     )
 
-    # 4.2. Camada da Linha
-    line = base.mark_line(color='#1f77b4')
+    fig.update_traces(textposition='top center')
 
-    # 4.3. Camada dos Pontos (Substitui o 'point=True')
-    points = base.mark_point(
-        size=60,
-        filled=True,
-        color='#1f77b4'
+    # Ajustes do layout
+    fig.update_layout(
+        template=tema,
+        hovermode='x unified',
+        title_x=0.5,
+        xaxis_title=coluna_x,
+        yaxis_title=None
     )
 
-    # 4.4. Camada de Texto (Os rótulos dos dados)
-    text = base.mark_text(
-        align='center',
-        baseline='bottom', # Coloca o texto acima do ponto
-        dy=-8              # Desloca o texto 8 pixels para CIMA
-    ).encode(
-        # Define o texto a ser exibido: o valor da coluna 'Total'
-        # Usamos format=',' para formatar números (ex: 1,500)
-        text=alt.Text('Total:Q', format=',')
-    )
+    # Força o eixo X como categórico para mostrar todos os itens
+    fig.update_xaxes(type='category')
 
-    # 4.5. Combina as camadas
-    # O gráfico final é a soma da linha, dos pontos e do texto
-    chart = line + points + text
-        
-    return st.altair_chart(chart, use_container_width=True)
-
+    st.plotly_chart(fig, use_container_width=True)
 
 # Gráfico de radar
 
