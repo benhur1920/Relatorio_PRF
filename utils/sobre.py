@@ -7,20 +7,24 @@ def sobre():
       
     
     imagem_path1 = os.path.join("imagem", "estrada.jpg")
+    imagem_path2 = os.path.join("imagem", "silhueta-de-familia-feliz-na-sunset.jpg")
+    imagem_path3 = os.path.join("imagem", "estrada-sinuosa-com-cerca-de-madeira-em-uma-floresta-de-montanha-floresta-verde-clara-contra-o-ceu-azul.jpg")
 
     st.markdown("<h2 style='text-align: center; '>🚨 Introdução ao Estudo dos Acidentes Rodoviários da PRF</h2>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Primeira seção com imagem e texto
-    col1, col2 = st.columns([2, 3], gap="small")
+    col1, col2, col3 = st.columns(3, gap="large")
 
     with col1:
-        st.image(imagem_path1, use_container_width=True, caption="Trecho de uma estrada")
+        st.image(imagem_path1, use_container_width=True, caption="Tempo bom para viagem")
+    with col2:    
+        st.image(imagem_path2, use_container_width=True, caption="Família")
 
+    with col3:
+        st.image(imagem_path3, use_container_width=True, caption="Trecho de estrada - Curvas")
 
-    with col2:
-        
-        st.markdown(
+    st.markdown(
             """
             <div style="text-align: justify; font-size: 17px">
                 <p>
@@ -49,8 +53,8 @@ def sobre():
                 </p>
             </div>
             """,
-            unsafe_allow_html=True
-        )
+        unsafe_allow_html=True
+    )
 
 
 

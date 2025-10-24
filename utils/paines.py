@@ -10,7 +10,7 @@ from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, 
 
 def graficos(df):
 
-    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["📊 Quantitativos ","📉 Correlações", "📍 Localidades", "⚠️ Características dos Acidentes",
+    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Correlações", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
@@ -47,7 +47,7 @@ def graficos(df):
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico temporal para análise")
 
         # --- Definição de colunas ---
-        colunas_categoricas = ['Data', 'Ano', 'Mês', 'Dia', 'Dia Semana']
+        colunas_categoricas = ['Data', 'Ano', 'Mês', 'Dia', 'Dia Semana', 'Hora']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
         c1,c2 = st.columns(2, gap="large")
@@ -95,7 +95,7 @@ def graficos(df):
             df_temp['Dia Semana'] = pd.Categorical(df_temp['Dia Semana'], categories=dias_semana, ordered=True)
 
         # --- Título dinâmico ---
-        titulo = f"{coluna_categoria} x {coluna_grupo_display}"
+        titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
 
         # --- Chamada do gráfico de linha ---
         try:
@@ -170,7 +170,8 @@ def graficos(df):
         )
 
 
-    with aba3:                                                    
+    with aba3:
+                                                            
         c1, c2, c3 = st.columns(3, gap="large")
         with c1:
            df = filtros_aplicados(df, 'Classificacao Acidente') 
@@ -181,27 +182,64 @@ def graficos(df):
         
         
         divisor()
-
+        """
         grafico_barra(df, 'Região', coluna_y=None, titulo="Acidentes por Região")
+
         top_n = st.slider("Top N Estados", min_value=5, max_value=27, value=10)
         grafico_barra(df, 'Uf', titulo="Acidentes por Estados", top_n=top_n)
+
         top_n = st.slider("Top N Municípios", min_value=5, max_value=30, value=10)
         grafico_barra(df, 'Municipio', titulo="Acidentes por Municípios - Top 20", top_n=top_n)
+
         top_n = st.slider("Top N BR", min_value=5, max_value=30, value=5)
         grafico_barra(df, 'Br', titulo="Top 20 BR mais acidentes", top_n=top_n)
-        
+        """
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de barras para análise")
+        # --- Definição de colunas ---
+        colunas_categoricas = ['Região', 'Uf', 'Municipio', 'Br']
+        colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
+        c1, c2 = st.columns(2, gap="large")
 
-    
+        with c1:
+            coluna_categoria = st.selectbox(
+                "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
+                options=colunas_categoricas,
+                key="select_categoria_barra"  # 🔹 chave única
+            )
 
-                
-        
-        
+        with c2:
+            grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
+            grupo_options_display = [g[0] for g in grupo_display_map]
+
+            coluna_grupo_display = st.selectbox(
+                "Selecione o grupo disponível do conjunto de dados para o Eixo Y",
+                options=grupo_options_display,
+                key="select_grupo_barra"  # 🔹 chave única
+            )
+
+                # --- Mapeia o nome exibido (display) para o valor real ---
+            mapa_display_para_valor = dict(grupo_display_map)
+            coluna_grupo = mapa_display_para_valor[coluna_grupo_display]
+
+            # --- Preparação para gráfico ---
+            df_temp = df.copy()
+
+            # --- Título dinâmico ---
+            titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
+
+        # --- Chamada do gráfico de barras ---
+        try:
+            top_n = st.slider("Top N para Estados, Municípios e Brs - no máximo 30", min_value=5, max_value=30, value=5)
+            grafico_barra(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+        except Exception as e:
+            st.error(f"Erro ao gerar o gráfico de barras: {e}")
+       
     with aba4:
                   
         
         divisor()
-
+        """
         c1, c2 = st.columns(2, gap="large")
         with c1:
             grafico_coluna(df, 'Tipo Pista', titulo="Tipo Pista")
@@ -217,9 +255,51 @@ def graficos(df):
         #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
         #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
         #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
+        """
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico treemap para análise")
+    # --- Definição de colunas ---
+        colunas_categoricas = ['Tipo Pista', 'Condicao Climatica Grupo', 'Fase Dia', 'Partes Dia']
+        colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
+
+        c1, c2 = st.columns(2, gap="large")
+
+        with c1:
+            coluna_categoria = st.selectbox(
+                "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
+                options=colunas_categoricas,
+                key="select_categoria_treemap"  # 🔹 chave única
+            )
+
+        with c2:
+            grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
+            grupo_options_display = [g[0] for g in grupo_display_map]
+
+            coluna_grupo_display = st.selectbox(
+                "Selecione o grupo disponível do conjunto de dados para o Eixo Y",
+                options=grupo_options_display,
+                key="select_grupo_treemap"  # 🔹 chave única
+            )
+
+                # --- Mapeia o nome exibido (display) para o valor real ---
+            mapa_display_para_valor = dict(grupo_display_map)
+            coluna_grupo = mapa_display_para_valor[coluna_grupo_display]
+
+            # --- Preparação para gráfico ---
+            df_temp = df.copy()
+
+            # --- Título dinâmico ---
+            titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
+
+        # --- Chamada do gráfico de barras ---
+        try:
+            #top_n = st.slider("Top N para Estados, Municípios e Brs - no máximo 30", min_value=5, max_value=30, value=5)
+            grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+        except Exception as e:
+            st.error(f"Erro ao gerar o gráfico de treemap: {e}")
+
 
     with aba5:
-        
+        """
         c1, c2 = st.columns(2, gap="large")
         with c1:
             top_n = st.slider("Top N Tipo Acidente", min_value=5, max_value=16, value=5)
@@ -235,14 +315,14 @@ def graficos(df):
         with c4:
             
             grafico_treemap(df, 'Fase Dia', titulo="Fase do Dia")
-
+        """
         divisor()
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de radar para analise")
         # Grafico de radar interativo
         # Dando opcoes para o usuario escolher
         colunas_categoricas = ['Condicao Metereologica', 'Fase Dia', 'Tipo Acidente', 'Classificacao Acidente',
                                'Grupo Via', 'Região', 'Uf', 'Partes Dia', 'Causa Grupo', 'Condicao Climatica Grupo']
-        colunas_numericas = ['Ano', 'Mês', 'Mortos', 'Feridos', 'Veiculos', 'Dia Da Semana']
+        colunas_numericas = ['Ano', 'Mês', 'Mortos', 'Feridos', 'Veiculos', 'Dia Semana']
 
         # Filtro para categoria (eixo angular)
         coluna_categoria = st.selectbox(
@@ -265,7 +345,8 @@ def graficos(df):
             st.warning("⚠️ As colunas de categoria e grupo não podem ser iguais. Escolha colunas diferentes.")
         else:
             try:
-                grafico_radar(df, coluna_categoria, coluna_grupo, f"{coluna_categoria} x {coluna_grupo if coluna_grupo else ''}")
+                titulo = f"📊 {coluna_categoria} por {coluna_grupo if coluna_grupo else ''}"
+                grafico_radar(df, coluna_categoria, coluna_grupo, titulo)
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico de radar: {e}")
 
@@ -317,7 +398,7 @@ def graficos(df):
         with st.expander("🧹 **Principais tratamentos aplicados aos dados/Enriquecimento da fonte de dados**"):
             st.markdown("""
             - Junção das colunas **Feridos Graves** e **Feridos Leves** em `Feridos`;  
-            - Criação das colunas ['Ano', 'Mês','Dia', 'Partes_Dia', 'Região'] para futura aplicação de machine learning;  
+            - Criação das colunas ['Ano', 'Mês','Dia', 'Hora', 'Partes_Dia', 'Região'] para futura aplicação de machine learning;  
             - Junção das colunas `Município` e `UF` → `Município - UF`.
             """)
 
