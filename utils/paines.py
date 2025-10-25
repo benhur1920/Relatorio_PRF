@@ -10,7 +10,7 @@ from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, 
 
 def graficos(df):
 
-    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Analise relaçional", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
+    aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Analise relacional", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
@@ -217,7 +217,7 @@ def graficos(df):
         colunas_x = ['Feridos', 'Mortos', 'Veiculos']
         colunas_y = ['Mortos','Feridos',  'Veiculos']
         coluna_causa = ['Grupo Via', 'Condicao Climatica Grupo', 'Tipo Acidente', 'Causa Grupo', 'Tipo Pista',
-                        'Dia Semana', 'Partes Dia', 'Ano', 'Mês', 'Dia']
+                        'Dia Semana', 'Partes Dia', 'Ano', 'Mês', 'Dia','Hora']
 
         c1, c2, c3 = st.columns(3, gap="large")
 
@@ -662,16 +662,33 @@ def graficos(df):
             permitindo identificar relações entre causas, condições climáticas, horários e gravidade dos eventos.
             """)
         
-        with st.expander("✅ Possíveis Soluções"):
+        with st.expander("🛣️ Recomendações para Redução de Acidentes"):
             st.markdown("""
-            Para reduzir acidentes, recomenda-se campanhas institucionais sobre direção responsável, intensificação da 
-                        fiscalização nos períodos críticos e incentivo à adoção de sistemas de segurança nos veículos, 
-                        como frenagem automática e recursos de assistência à direção em série. Essas medidas podem diminuir 
-                        colisões  e acidentes nas rodovias federais, aumentando a segurança viária.
-            """)
+
+
+                Para reduzir a ocorrência de acidentes nas rodovias federais, recomenda-se a adoção das seguintes medidas:
+
+- 🚗 Campanhas institucionais voltadas à direção responsável, promovendo conscientização sobre comportamentos seguros no trânsito.  
+- 👮 Intensificação da fiscalização durante os períodos e locais de maior risco, garantindo maior presença e atuação preventiva das autoridades.  
+- ⚙️ Incentivo à adoção de tecnologias de segurança veicular, como:  
+  - sistemas de frenagem automática;  
+  - assistência à direção;  
+  - e outros recursos de segurança ativa.  
+  **Nota:** O governo deveria incentivar — e até obrigar — as montadoras a produzirem esses sistemas em série para todos os veículos fabricados, 
+  a exemplo do que foi feito com os cintos de segurança e o DRL (luz diurna).  
+- 🚧 Instalação de lombadas eletrônicas e outros mecanismos de controle de velocidade nos pontos com maior concentração de acidentes.  
+- 📢 Divulgação massiva dos dados de acidentes, promovendo transparência e conscientização da sociedade, 
+  uma vez que a falta de informação também contribui para os altos índices de incidência nas rodovias federais.  
+- 🏥 Divulgação dos **custos de saúde pública** decorrentes dos acidentes, evidenciando o impacto financeiro e social desses eventos. 
+  Tal transparência permitiria ao próprio governo **direcionar mais investimentos para ações preventivas do que reparadoras**, 
+  reconhecendo que **uma vida não tem preço**.  
+
+A combinação dessas ações pode contribuir significativamente para reduzir o número de acidentes e aumentar a segurança viária nas rodovias federais.
+""", unsafe_allow_html=True)
+    
 
         st.markdown("---")
-        st.caption("_Esta aba tem como objetivo garantir transparência e reprodutibilidade da análise._")
+        st.caption("_Nosso objetivo garantir transparência e reprodutibilidade da análise._")
 
 
 

@@ -529,7 +529,7 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     fig.update_layout(
         template=tema,
-        yaxis=dict(title=coluna_x, showticklabels=True),
+        yaxis=dict(title=None, showticklabels=True),
         xaxis=dict(title=None, showticklabels=True, categoryorder='total descending'),
         showlegend=False,
         margin=dict(t=25, l=0, r=0, b=0),
