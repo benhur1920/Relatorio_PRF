@@ -3,7 +3,7 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 from utils.marcadores import divisor
 from utils.graficos import (grafico_barra, grafico_pizza, grafico_scater,  grafico_linha,  
-                            grafico_heatmap, grafico_radar, grafico_treemap, grafico_coluna, grafico_barra_empilhada)
+                            grafico_heatmap, grafico_radar, grafico_treemap, grafico_coluna)
 from utils.filtros import filtros_aplicados
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
@@ -116,25 +116,30 @@ def graficos(df):
         taxa_mortalidade_feridos = round((tot_mortos / tot_feridos) * 100 if total_feridos else 0, 0)
         media_veiculos_acidente = round(tot_veiculos / tot_acidentes if total_acidentes else 0, 0)
 
+        st.subheader("🔍 Estatísticas")
         c2, c3, c4 = st.columns(3, gap="large")
         
-
         with c2.container(border=True):   
-            st.metric("⚖️ Mortalidade (%)", f"{taxa_mortalidade:.2f}%")
+            st.metric("⚖️ Mortalidade (Mortos/Acidentes)", f"{taxa_mortalidade:g}%")
 
         with c3.container(border=True):
-            st.metric("🩸 Mortos / 100 Feridos", f"{taxa_mortalidade_feridos:.2f}%")
+            st.metric("🩸 Mortos / 100 Feridos", f"{taxa_mortalidade_feridos:g}%")
 
         with c4.container(border=True):
-            st.metric("🚙 Veículos / Acidente", f"{media_veiculos_acidente:.2f}")  
+            st.metric("🚙 Veículos / Acidente", f"{media_veiculos_acidente:g}")  
 
         divisor()
 
+        st.subheader('🚗💥 Causas x Consequências dos Acidentes')
+        st.write('🧭 Selecione as variáveis e o fator de análise (ex: Região, Tipo, Causa) para explorar suas relações.')
+
+
+        """
         # Agrupar os dados por grupo de causa
         df_grouped = df.groupby("Causa Grupo", as_index=False).agg({
             "Feridos": "sum",
-            "Mortos": "sum",
-            "Veiculos": "sum"
+            "Mortos": "sum"
+            
         })
         # === GRÁFICO ===
         grafico_scater(
@@ -142,10 +147,10 @@ def graficos(df):
             df_grouped,
             coluna_x="Feridos",
             coluna_y="Mortos",
-            tamanho_y="Veiculos",
+            tamanho_y="Mortos",
             cor_bola="Causa Grupo",
             nome_bola="Causa Grupo",
-            titulo="Correlação entre Feridos e Mortos por Grupo de Causa",
+            titulo="Relação entre Feridos e Mortos por Grupo de Causa",
             key="grafico_feridos_mortos_causa"
         )
 
@@ -154,24 +159,123 @@ def graficos(df):
         # Agrupa os dados por tipo de acidente
         df_grouped_tipo = df.groupby("Tipo Acidente", as_index=False).agg({
             "Feridos": "sum",
-            "Veiculos": "sum"
+            "Mortos": "sum"
         })
         
         grafico_scater(
-        "### 🚘 Relação entre Veículos e Feridos (agrupado por tipo de acidente)",
+        "### 🚘 Relação entre Feridos e Mortos (agrupado por tipo de acidente)",
         df_grouped_tipo,
-        coluna_x="Veiculos",
-        coluna_y="Feridos",
-        tamanho_y="Feridos",
+        coluna_x="Feridos",
+        coluna_y="Mortos",
+        tamanho_y="Mortos",
         cor_bola="Tipo Acidente",
         nome_bola="Tipo Acidente",
-        titulo="Correlação entre Veículos e Feridos por Tipo de Acidente",
+        titulo="Relação entre Feridos e Mortos por Tipo de Acidente",
         key="grafico_veiculos_feridos_tipo"
+        )
+
+        divisor()
+        # Agrupa os dados por tipo de acidente
+        df_grouped_tipo = df.groupby("Condicao Climatica Grupo", as_index=False).agg({
+            "Feridos": "sum",
+            "Mortos": "sum"
+        })
+        
+        grafico_scater(
+        "### 🚘 Relação entre Feridos e Mortos (agrupado por condição climática)",
+        df_grouped_tipo,
+        coluna_x="Feridos",
+        coluna_y="Mortos",
+        tamanho_y="Mortos",
+        cor_bola="Condicao Climatica Grupo",
+        nome_bola="Condicao Climatica Grupo",
+        titulo="Relação entre Feridos e Mortos por Condição Climática",
+        key="grafico_veiculos_mortos_Condicao_Climatica_Grupo"
+        )
+
+        divisor()
+        # Agrupa os dados por tipo de acidente
+        df_grouped_tipo = df.groupby("Grupo Via", as_index=False).agg({
+            "Feridos": "sum",
+            "Mortos": "sum"
+        })
+        
+        grafico_scater(
+        "### 🚘 Relação entre Veículos e Mortos (agrupado por Grupo Via)",
+        df_grouped_tipo,
+        coluna_x="Feridos",
+        coluna_y="Mortos",
+        tamanho_y="Mortos",
+        cor_bola="Grupo Via",
+        nome_bola="Grupo Via",
+        titulo="Relação entre Feridos e Mortos por Grupo de Via",
+        key="grafico_veiculos_mortos_Grupo_Via"
+        )
+        """
+
+        # --- Definição de colunas ---
+        colunas_x = ['Feridos', 'Mortos', 'Veiculos']
+        colunas_y = ['Mortos','Feridos',  'Veiculos']
+        coluna_causa = ['Grupo Via', 'Condicao Climatica Grupo', 'Tipo Acidente', 'Causa Grupo', 'Tipo Pista',
+                        'Dia Semana', 'Partes Dia', 'Ano', 'Mês', 'Dia']
+
+        c1, c2, c3 = st.columns(3, gap="large")
+
+        with c1:
+            coluna_x = st.selectbox(
+                "📊 Selecione a primeira variável (Eixo X)",
+                options=colunas_x,
+                key="select_coluna_x"
+            )
+
+        with c2:
+            coluna_y = st.selectbox(
+                "📈 Selecione a segunda variável (Eixo Y)",
+                options=colunas_y,
+                key="select_coluna_y"
+            )
+
+        with c3:
+            causa = st.selectbox(
+                "🎯 Selecione o fator de análise (ex: Região, Tipo, Causa, etc.)",
+                options=coluna_causa,
+                key="select_causa"
+            )
+
+        # --- Verificação de variáveis iguais ---
+        if coluna_x == coluna_y:
+            st.warning(f"⚠️ As variáveis selecionadas para os eixos **X** e **Y** são iguais: **{coluna_x}**. \
+        Por favor, selecione variáveis diferentes para visualizar a relação entre elas.")
+            st.stop()  # interrompe a execução do restante do código até corrigir
+
+
+        # --- Preparação para gráfico ---
+        df_temp = df.copy()
+
+        # --- Título dinâmico ---
+        titulo = f"📊 {coluna_x} por {coluna_y}"
+
+        # --- Agrupa os dados pela causa selecionada ---
+        df_grouped_tipo = df.groupby(causa, as_index=False).agg({
+            coluna_x: "sum",
+            coluna_y: "sum"
+        })
+
+        # --- Gera o gráfico ---
+        grafico_scater(
+            df_grouped_tipo,
+            coluna_x=coluna_x,
+            coluna_y=coluna_y,
+            tamanho_y=coluna_y,
+            cor_bola=causa,         # ✅ causa selecionada, não a lista
+            nome_bola=causa,        # ✅ causa selecionada, não a lista
+            titulo=f"Relação entre {coluna_x} e {coluna_y} por {causa}",
+            key="grafico_mortos_feridos"
         )
 
 
     with aba3:
-                                                            
+        st.subheader('🧩 Filtros Extras')                                            
         c1, c2, c3 = st.columns(3, gap="large")
         with c1:
            df = filtros_aplicados(df, 'Classificacao Acidente') 
@@ -194,7 +298,14 @@ def graficos(df):
         top_n = st.slider("Top N BR", min_value=5, max_value=30, value=5)
         grafico_barra(df, 'Br', titulo="Top 20 BR mais acidentes", top_n=top_n)
         """
-        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de barras para análise")
+        st.subheader("🎯 Selecione o tipo e os parâmetros para construção dos visualizações")
+        # Seletor de tipo de gráfico
+        tipo_mapa = st.radio(
+            "Tipo de Gráficos",
+            ["Treemap", "Barra", "Coluna" ],
+            horizontal=True
+        )
+
         # --- Definição de colunas ---
         colunas_categoricas = ['Região', 'Uf', 'Municipio', 'Br']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
@@ -228,50 +339,75 @@ def graficos(df):
             # --- Título dinâmico ---
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
 
-        # --- Chamada do gráfico de barras ---
-        try:
-            if coluna_categoria != "Região":
-                top_n = st.slider(
-                "Top N para Estados, Municípios e Brs - no máximo 30",
-                min_value=5,
-                max_value=30,
-                value=5
-            )
-            else:
-                top_n = 5  # só 5 regiões, não precisa do slider
+            
 
-            grafico_barra(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
-        except Exception as e:
-            st.error(f"Erro ao gerar o gráfico de barras: {e}")
-       
+        # --- Chamada do gráfico de barras ---
+        if tipo_mapa == "Treemap": 
+            try:
+                if coluna_categoria != "Região":
+                    top_n = st.slider(
+                    "Top N para Estados, Municípios e Brs - no máximo 30",
+                    min_value=5,
+                    max_value=30,
+                    value=5
+                )
+                else:
+                    top_n = 5  # só 5 regiões, não precisa do slider
+
+                grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de barras: {e}")
+        elif  tipo_mapa == "Barra":
+            try:
+                if coluna_categoria != "Região":
+                    top_n = st.slider(
+                    "Top N para Estados, Municípios e Brs - no máximo 30",
+                    min_value=5,
+                    max_value=30,
+                    value=5
+                )
+                else:
+                    top_n = 5  # só 5 regiões, não precisa do slider
+
+                grafico_barra(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de barras: {e}")
+        else:
+            try:
+                if coluna_categoria != "Região":
+                    top_n = st.slider(
+                    "Top N para Estados, Municípios e Brs - no máximo 30",
+                    min_value=5,
+                    max_value=30,
+                    value=5
+                )
+                else:
+                    top_n = 5  # só 5 regiões, não precisa do slider
+
+                grafico_coluna(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
+            except Exception as e:
+                st.error(f"Erro ao gerar o gráfico de barras: {e}")
+        
     with aba4:
-                  
         
         divisor()
-        """
-        c1, c2 = st.columns(2, gap="large")
-        with c1:
-            grafico_coluna(df, 'Tipo Pista', titulo="Tipo Pista")
-        with c2:
-            grafico_pizza(df, 'Uso Solo', titulo="Trecho Urbano ou Rural")
-        divisor()
-        c3, c4 = st.columns(2, gap="large")     
-        with c3:
-            grafico_barra(df, 'Dia Semana', titulo="Dia da Semana")
-        with c4:
-            grafico_coluna(df, 'Condicao Climatica Grupo', titulo="Condições Climáticas")
         
-        #grafico_radar(df, 'Grupo Via', 'Ano', 'Vias com maior indice de acidentes')
-        #grafico_radar(df, 'Classificacao Acidente', 'Ano', 'Vias com maior consequencia nos acidentes')
-        #grafico_radar(df, 'Condicao Metereologica', 'Mortos', 'Condição meterológica com maior consequencia nos acidentes')
-        """
-        st.subheader("🎯 Selecione parâmetros abaixo para construção de um Gráfico Treemap ou Gráfico de Pizza para análise")
-    # --- Definição de colunas ---
+        st.subheader("🎯 Selecione o tipo e os parâmetros para construção dos gráficos")
+    
+        # Seletor de tipo de gráfico
+        tipo_mapa = st.radio(
+            "Tipo de Gráficos",
+            ["Treemap", "Pizza", "Coluna"],
+            horizontal=True
+        )
+
+        # As variáveis disponíveis
         colunas_categoricas = ['Tipo Pista', 'Condicao Climatica Grupo', 'Fase Dia', 'Partes Dia']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
         c1, c2 = st.columns(2, gap="large")
 
+        # Receber as variáveis dos gráficos
         with c1:
             coluna_categoria = st.selectbox(
                 "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
@@ -289,25 +425,17 @@ def graficos(df):
                 key="select_grupo_treemap"  # 🔹 chave única
             )
 
-                # --- Mapeia o nome exibido (display) para o valor real ---
+                # Mapeia o nome exibido (display) para o valor real 
             mapa_display_para_valor = dict(grupo_display_map)
             coluna_grupo = mapa_display_para_valor[coluna_grupo_display]
 
-            # --- Preparação para gráfico ---
+            #  Preparação para gráfico 
             df_temp = df.copy()
 
-            # --- Título dinâmico ---
+            #  Título dinâmico 
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
-        """
-
-        # --- Seletor de tipo de mapa ---
-        tipo_mapa = st.radio(
-            "Escolha o tipo de gráfico",
-            ["Treemap", "Pizza", "Coluna", "Barra Empilhada"],
-            horizontal=True
-        )
-
-        # Define qual coluna e título usar
+        
+        # Exibir os gráficos 
         if tipo_mapa == "Treemap":
             try:
                 grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
@@ -318,32 +446,14 @@ def graficos(df):
                 grafico_pizza(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico de treemap: {e}")
-
-        elif tipo_mapa == "Barra Empilhada":
-            try:
-                grafico_barra_empilhada(
-                df=df_temp,
-                coluna_x=coluna_categoria,  # eixo X
-                coluna_y=coluna_valor,      # a coluna com valores
-                coluna_grupo=coluna_grupo,  # empilhamento
-                titulo=titulo,
-                top_n=top_n
-            )
-            except Exception as e:
-                st.error(f"Erro ao gerar o gráfico de treemap: {e}")
         else:
             try:
                 grafico_coluna(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico de treemap: {e}")
-        """
         
-        try:
-            #top_n = st.slider("Top N para Estados, Municípios e Brs - no máximo 30", min_value=5, max_value=30, value=5)
-            grafico_treemap(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
-        except Exception as e:
-            st.error(f"Erro ao gerar o gráfico de treemap: {e}")
-
+        
+        
 
     with aba5:
         """
@@ -550,6 +660,14 @@ def graficos(df):
             st.markdown("""
             Este painel interativo foi desenvolvido para **explorar os padrões e fatores associados aos acidentes rodoviários**, 
             permitindo identificar relações entre causas, condições climáticas, horários e gravidade dos eventos.
+            """)
+        
+        with st.expander("✅ Possíveis Soluções"):
+            st.markdown("""
+            Para reduzir acidentes, recomenda-se campanhas institucionais sobre direção responsável, intensificação da 
+                        fiscalização nos períodos críticos e incentivo à adoção de sistemas de segurança nos veículos, 
+                        como frenagem automática e recursos de assistência à direção em série. Essas medidas podem diminuir 
+                        colisões  e acidentes nas rodovias federais, aumentando a segurança viária.
             """)
 
         st.markdown("---")
