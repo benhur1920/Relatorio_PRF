@@ -14,45 +14,18 @@ def graficos(df):
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
-        """
-        c1, c2 = st.columns([3,2], gap="large")
-        with c1:
-            grafico_linha(df, 'Data Inversa', None, titulo=f"**Total de acidentes no período:** {total_acidentes(df)}")
-        with c2:
-            grafico_barra_sem_ordenar(df, 'Ano', titulo="Acidentes")
-        
-        c3, c4 = st.columns([3,2], gap="large")
-        with c3:
-            grafico_linha(df, 'Data Inversa', 'Mortos', titulo=f"**Total de mortes no período:** {total_mortos(df)}")
-        with c4:
-            grafico_barra_sem_ordenar(df, 'Ano', 'Mortos', titulo="Mortos")
-
-        c5, c6 = st.columns([3,2], gap="large")
-        with c5:
-            grafico_linha(df, 'Data Inversa', 'Feridos', titulo=f"**Total de feridos no período:** {total_feridos(df)}")
-        with c6:
-            grafico_barra_sem_ordenar(df, 'Ano','Feridos', titulo="Feridos")
-        c7, c8 = st.columns([3,2], gap="large")
-        with c7:
-            grafico_linha(df, 'Data Inversa', 'Veiculos', titulo=f"**Total de veículos envolvidos no período:** {total_veiculos(df)}")
-        with c8:
-            grafico_barra_sem_ordenar(df,'Ano', 'Veiculos', titulo="Veículos")
-        
-        
-        grafico_linha(df, 'Dia Semana', 'Veiculos', titulo="**Total de veículos envolvidos pelos dias da semana no período:**")
-        """
-        
+                
         # Fazer gráficos dinâmicos
 
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico temporal para análise")
 
-        # --- Definição de colunas ---
+        #  Definição de colunas 
         colunas_categoricas = ['Data', 'Ano', 'Mês', 'Dia', 'Dia Semana', 'Hora']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
         c1,c2 = st.columns(2, gap="large")
         with c1:
-            # --- Selectbox para categoria (Eixo X) ---
+            #  Selectbox para categoria (Eixo X) 
             coluna_categoria = st.selectbox(
                 "Selecione a escala de tempo disponivel do conjunto de dados para o Eixo X",
                 options=colunas_categoricas,
@@ -60,7 +33,7 @@ def graficos(df):
                 key="select_categoria"
             )
         with c2:
-            # --- Selectbox para grupo (Eixo Y) ---
+            #  Selectbox para grupo (Eixo Y) 
             # Mapeando None para "Total Acidentes"
             grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
             grupo_options_display = [g[0] for g in grupo_display_map]
@@ -75,12 +48,12 @@ def graficos(df):
         # Recupera o valor real do selectbox
         coluna_grupo = dict(grupo_display_map)[coluna_grupo_display]
 
-        # --- Validação de categoria e grupo iguais ---
+        #  Validação de categoria e grupo iguais 
         if coluna_categoria == coluna_grupo:
             st.warning("⚠️ As colunas de categoria e grupo não podem ser iguais. Escolha colunas diferentes.")
             st.stop()
 
-        # --- Preparação para gráfico ---
+        #  Preparação para gráfico 
         df_temp = df.copy()
 
         # Ordenar mês corretamente, caso seja selecionado
@@ -94,10 +67,10 @@ def graficos(df):
                         "Quinta-Feira", "Sexta-Feira", "Sábado"]
             df_temp['Dia Semana'] = pd.Categorical(df_temp['Dia Semana'], categories=dias_semana, ordered=True)
 
-        # --- Título dinâmico ---
+        #  Título dinâmico 
         titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
 
-        # --- Chamada do gráfico de linha ---
+        #  Chamada do gráfico de linha 
         try:
             grafico_linha(df_temp, coluna_categoria, coluna_grupo, titulo)
         except Exception as e:
@@ -134,86 +107,7 @@ def graficos(df):
         st.write('🧭 Selecione as variáveis e o fator de análise (ex: Região, Tipo, Causa) para explorar suas relações.')
 
 
-        """
-        # Agrupar os dados por grupo de causa
-        df_grouped = df.groupby("Causa Grupo", as_index=False).agg({
-            "Feridos": "sum",
-            "Mortos": "sum"
-            
-        })
-        # === GRÁFICO ===
-        grafico_scater(
-            "### 📉 Relação entre Feridos e Mortos (agrupado por causa)",
-            df_grouped,
-            coluna_x="Feridos",
-            coluna_y="Mortos",
-            tamanho_y="Mortos",
-            cor_bola="Causa Grupo",
-            nome_bola="Causa Grupo",
-            titulo="Relação entre Feridos e Mortos por Grupo de Causa",
-            key="grafico_feridos_mortos_causa"
-        )
-
-
-        divisor()
-        # Agrupa os dados por tipo de acidente
-        df_grouped_tipo = df.groupby("Tipo Acidente", as_index=False).agg({
-            "Feridos": "sum",
-            "Mortos": "sum"
-        })
-        
-        grafico_scater(
-        "### 🚘 Relação entre Feridos e Mortos (agrupado por tipo de acidente)",
-        df_grouped_tipo,
-        coluna_x="Feridos",
-        coluna_y="Mortos",
-        tamanho_y="Mortos",
-        cor_bola="Tipo Acidente",
-        nome_bola="Tipo Acidente",
-        titulo="Relação entre Feridos e Mortos por Tipo de Acidente",
-        key="grafico_veiculos_feridos_tipo"
-        )
-
-        divisor()
-        # Agrupa os dados por tipo de acidente
-        df_grouped_tipo = df.groupby("Condicao Climatica Grupo", as_index=False).agg({
-            "Feridos": "sum",
-            "Mortos": "sum"
-        })
-        
-        grafico_scater(
-        "### 🚘 Relação entre Feridos e Mortos (agrupado por condição climática)",
-        df_grouped_tipo,
-        coluna_x="Feridos",
-        coluna_y="Mortos",
-        tamanho_y="Mortos",
-        cor_bola="Condicao Climatica Grupo",
-        nome_bola="Condicao Climatica Grupo",
-        titulo="Relação entre Feridos e Mortos por Condição Climática",
-        key="grafico_veiculos_mortos_Condicao_Climatica_Grupo"
-        )
-
-        divisor()
-        # Agrupa os dados por tipo de acidente
-        df_grouped_tipo = df.groupby("Grupo Via", as_index=False).agg({
-            "Feridos": "sum",
-            "Mortos": "sum"
-        })
-        
-        grafico_scater(
-        "### 🚘 Relação entre Veículos e Mortos (agrupado por Grupo Via)",
-        df_grouped_tipo,
-        coluna_x="Feridos",
-        coluna_y="Mortos",
-        tamanho_y="Mortos",
-        cor_bola="Grupo Via",
-        nome_bola="Grupo Via",
-        titulo="Relação entre Feridos e Mortos por Grupo de Via",
-        key="grafico_veiculos_mortos_Grupo_Via"
-        )
-        """
-
-        # --- Definição de colunas ---
+        #  Definição de colunas 
         colunas_x = ['Feridos', 'Mortos', 'Veiculos']
         colunas_y = ['Mortos','Feridos',  'Veiculos']
         coluna_causa = ['Grupo Via', 'Condicao Climatica Grupo', 'Tipo Acidente', 'Causa Grupo', 'Tipo Pista',
@@ -242,33 +136,33 @@ def graficos(df):
                 key="select_causa"
             )
 
-        # --- Verificação de variáveis iguais ---
+        #  Verificação de variáveis iguais 
         if coluna_x == coluna_y:
             st.warning(f"⚠️ As variáveis selecionadas para os eixos **X** e **Y** são iguais: **{coluna_x}**. \
         Por favor, selecione variáveis diferentes para visualizar a relação entre elas.")
             st.stop()  # interrompe a execução do restante do código até corrigir
 
 
-        # --- Preparação para gráfico ---
+        #  Preparação para gráfico 
         df_temp = df.copy()
 
-        # --- Título dinâmico ---
+        #  Título dinâmico 
         titulo = f"📊 {coluna_x} por {coluna_y}"
 
-        # --- Agrupa os dados pela causa selecionada ---
+        #  Agrupa os dados pela causa selecionada 
         df_grouped_tipo = df.groupby(causa, as_index=False).agg({
             coluna_x: "sum",
             coluna_y: "sum"
         })
 
-        # --- Gera o gráfico ---
+        #  Gera o gráfico 
         grafico_scater(
             df_grouped_tipo,
             coluna_x=coluna_x,
             coluna_y=coluna_y,
             tamanho_y=coluna_y,
-            cor_bola=causa,         # ✅ causa selecionada, não a lista
-            nome_bola=causa,        # ✅ causa selecionada, não a lista
+            cor_bola=causa,         #  causa selecionada, não a lista
+            nome_bola=causa,        #  causa selecionada, não a lista
             titulo=f"Relação entre {coluna_x} e {coluna_y} por {causa}",
             key="grafico_mortos_feridos"
         )
@@ -286,18 +180,7 @@ def graficos(df):
         
         
         divisor()
-        """
-        grafico_barra(df, 'Região', coluna_y=None, titulo="Acidentes por Região")
-
-        top_n = st.slider("Top N Estados", min_value=5, max_value=27, value=10)
-        grafico_barra(df, 'Uf', titulo="Acidentes por Estados", top_n=top_n)
-
-        top_n = st.slider("Top N Municípios", min_value=5, max_value=30, value=10)
-        grafico_barra(df, 'Municipio', titulo="Acidentes por Municípios - Top 20", top_n=top_n)
-
-        top_n = st.slider("Top N BR", min_value=5, max_value=30, value=5)
-        grafico_barra(df, 'Br', titulo="Top 20 BR mais acidentes", top_n=top_n)
-        """
+        
         st.subheader("🎯 Selecione o tipo e os parâmetros para construção dos visualizações")
         # Seletor de tipo de gráfico
         tipo_mapa = st.radio(
@@ -306,7 +189,7 @@ def graficos(df):
             horizontal=True
         )
 
-        # --- Definição de colunas ---
+        #  Definição de colunas 
         colunas_categoricas = ['Região', 'Uf', 'Municipio', 'Br']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
@@ -316,7 +199,7 @@ def graficos(df):
             coluna_categoria = st.selectbox(
                 "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
                 options=colunas_categoricas,
-                key="select_categoria_barra"  # 🔹 chave única
+                key="select_categoria_barra"  #  chave única
             )
 
         with c2:
@@ -326,22 +209,22 @@ def graficos(df):
             coluna_grupo_display = st.selectbox(
                 "Selecione o grupo disponível do conjunto de dados para o Eixo Y",
                 options=grupo_options_display,
-                key="select_grupo_barra"  # 🔹 chave única
+                key="select_grupo_barra"  #  chave única
             )
 
-                # --- Mapeia o nome exibido (display) para o valor real ---
+                #  Mapeia o nome exibido (display) para o valor real 
             mapa_display_para_valor = dict(grupo_display_map)
             coluna_grupo = mapa_display_para_valor[coluna_grupo_display]
 
-            # --- Preparação para gráfico ---
+            #  Preparação para gráfico 
             df_temp = df.copy()
 
-            # --- Título dinâmico ---
+            #  Título dinâmico 
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
 
             
 
-        # --- Chamada do gráfico de barras ---
+        #  Chamada do gráfico de barras 
         if tipo_mapa == "Treemap": 
             try:
                 if coluna_categoria != "Região":
@@ -451,28 +334,10 @@ def graficos(df):
                 grafico_coluna(df_temp, coluna_categoria, coluna_grupo, titulo, top_n=top_n)
             except Exception as e:
                 st.error(f"Erro ao gerar o gráfico de treemap: {e}")
-        
-        
-        
+    
 
     with aba5:
-        """
-        c1, c2 = st.columns(2, gap="large")
-        with c1:
-            top_n = st.slider("Top N Tipo Acidente", min_value=5, max_value=16, value=5)
-            grafico_barra(df, 'Tipo Acidente', titulo="Tipos de Acidentes",  top_n=top_n)
-        with c2:
-            top_n = st.slider("Top N Causa Acidente", min_value=5, max_value=8, value=5)
-            grafico_barra(df, 'Causa Grupo', titulo="Causas de Acidentes",  top_n=top_n)
         
-        divisor()
-        c3, c4 = st.columns(2, gap="large")
-        with c3:
-            grafico_treemap(df, 'Partes Dia', titulo="Partes do dia")
-        with c4:
-            
-            grafico_treemap(df, 'Fase Dia', titulo="Fase do Dia")
-        """
         divisor()
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de radar para analise")
         # Grafico de radar interativo
@@ -510,49 +375,13 @@ def graficos(df):
     
     
     with aba6:
-        """
-        st.header("Análise Geográfica de Acidentes")
-
-        c1, c2 = st.columns(2, gap="large")
-        with c1:
-           df = filtros_aplicados(df, 'Br') 
-        with c2:
-           df = filtros_aplicados(df, 'Km')
         
-
-        # Seletor de tipo de mapa
-        tipo_mapa = st.radio(
-            "Escolha o indicador para visualizar:",
-            ["Mortes", "Feridos", "Acidentes"],
-            horizontal=True
-        )
-
-        # Define qual coluna e título usar
-        if tipo_mapa == "Mortes":
-            coluna_valor = "Mortos"
-            titulo = "Mapa de Calor - Mortes em Rodovias Federais"
-        elif tipo_mapa == "Feridos":
-            coluna_valor = "Feridos"
-            titulo = "Mapa de Calor - Feridos em Rodovias Federais"
-        else:
-            coluna_valor = "Veiculos"
-            titulo = "Mapa de Calor - Total de Acidentes (por veículos envolvidos)"
-        
-
-        # Gera o gráfico
-        fig = grafico_heatmap(df, coluna_valor, titulo)
-
-        if fig:
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.warning("Não foi possível gerar o mapa. Verifique se há dados válidos.")
-        """
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um mapa de calor dinâmico")
 
-        # --- Cópia temporária do dataframe ---
+        #  Cópia temporária do dataframe 
         df_temp = df.copy()
 
-        # --- Seletor de tipo de mapa ---
+        #  Seletor de tipo de mapa 
         tipo_mapa = st.radio(
             "Escolha o indicador para visualizar:",
             ["Mortes", "Feridos", "Acidentes"],
@@ -570,7 +399,7 @@ def graficos(df):
             coluna_valor = "Veiculos"
             titulo = "Mapa de Calor - Total de Acidentes (por veículos envolvidos)"
 
-        # --- Slider para reduzir a quantidade de pontos ---
+        #  Slider para reduzir a quantidade de pontos 
         top_n = st.slider(
             "Selecione o número de BRs para exibir (5 a 15):",
             min_value=5,
@@ -579,7 +408,7 @@ def graficos(df):
         )
 
         try:
-            # --- Ordena e filtra as BRs com mais ocorrências ---
+            #  Ordena e filtra as BRs com mais ocorrências 
             if "Br" in df_temp.columns and coluna_valor in df_temp.columns:
                 top_brs = (
                     df_temp.groupby("Br")[coluna_valor]
@@ -589,7 +418,7 @@ def graficos(df):
                 )
                 df_temp = df_temp[df_temp["Br"].isin(top_brs)]
 
-            # --- Chama a função de mapa de calor ---
+            #  Chama a função de mapa de calor 
             fig = grafico_heatmap(df_temp, coluna_valor, titulo)
             if fig is not None:
                 st.plotly_chart(fig, use_container_width=True)
@@ -608,7 +437,8 @@ def graficos(df):
         with st.expander("🧹 **Principais tratamentos aplicados aos dados/Enriquecimento da fonte de dados**"):
             st.markdown("""
             - Junção das colunas **Feridos Graves** e **Feridos Leves** em `Feridos`;  
-            - Criação das colunas ['Ano', 'Mês','Dia', 'Hora', 'Partes_Dia', 'Região'] para futura aplicação de machine learning;  
+            - Criação das colunas ['Ano', 'Mês','Dia', 'Hora', 'Partes_Dia', 'Região'] para futura aplicação de machine learning 
+                        e descendo a granularidade de tempo;  
             - Junção das colunas `Município` e `UF` → `Município - UF`.
             """)
 
@@ -624,7 +454,7 @@ def graficos(df):
             - ❓ **Outros / Indefinidos:** Causas não especificadas.  
             """)
 
-        with st.expander("⏰ **Agrupamento da coluna 'Horario'**"):
+        with st.expander("⏰ **Agrupamento da coluna 'Partes Dia'**"):
             st.markdown("""
             - 🌅 **06:00 às 11:59 - Manhã**  
             - 🌇 **12:00 às 17:59 - Tarde**  
@@ -632,7 +462,7 @@ def graficos(df):
             - 🛌 **00:00 às 05:59 - Madrugada**  
             """)
 
-        with st.expander("🧠 **Agrupamento da coluna 'condicao_metereologica'**"):
+        with st.expander("🧠 **Agrupamento da coluna 'Condicao_Metereologica'**"):
             st.markdown("""
             - ☀️ **Bom:** Céu claro, sol, nublado.   
             - 🌧️ **Chuva:** Chuva, garoa, chuvisco.  
@@ -653,7 +483,8 @@ def graficos(df):
             st.markdown("""
             - Dados públicos da **Polícia Rodoviária Federal (PRF)**.  
             - Período analisado: **2021 a Ago/2025**.  
-            - Escopo: acidentes com vítimas (mortos e/ou feridos).  
+            - Escopo: acidentes com vítimas (mortos e/ou feridos), Veículos, Total de acidentes. 
+            - Relatório anual de ocorrências 
             """)
 
         with st.expander("💡 **Objetivo da aplicação**"):
@@ -668,24 +499,24 @@ def graficos(df):
 
                 Para reduzir a ocorrência de acidentes nas rodovias federais, recomenda-se a adoção das seguintes medidas:
 
-- 🚗 Campanhas institucionais voltadas à direção responsável, promovendo conscientização sobre comportamentos seguros no trânsito.  
-- 👮 Intensificação da fiscalização durante os períodos e locais de maior risco, garantindo maior presença e atuação preventiva das autoridades.  
-- ⚙️ Incentivo à adoção de tecnologias de segurança veicular, como:  
-  - sistemas de frenagem automática;  
-  - assistência à direção;  
-  - e outros recursos de segurança ativa.  
-  **Nota:** O governo deveria incentivar — e até obrigar — as montadoras a produzirem esses sistemas em série para todos os veículos fabricados, 
-  a exemplo do que foi feito com os cintos de segurança e o DRL (luz diurna).  
-- 🚧 Instalação de lombadas eletrônicas e outros mecanismos de controle de velocidade nos pontos com maior concentração de acidentes.  
-- 📢 Divulgação massiva dos dados de acidentes, promovendo transparência e conscientização da sociedade, 
-  uma vez que a falta de informação também contribui para os altos índices de incidência nas rodovias federais.  
-- 🏥 Divulgação dos **custos de saúde pública** decorrentes dos acidentes, evidenciando o impacto financeiro e social desses eventos. 
-  Tal transparência permitiria ao próprio governo **direcionar mais investimentos para ações preventivas do que reparadoras**, 
-  reconhecendo que **uma vida não tem preço**.  
+                - 🚗 Campanhas institucionais voltadas à direção responsável, promovendo conscientização sobre comportamentos seguros no trânsito.  
+                - 👮 Intensificação da fiscalização durante os períodos e locais de maior risco, garantindo maior presença e atuação preventiva das autoridades.  
+                - ⚙️ Incentivo à adoção de tecnologias de segurança veicular, como:  
+                     1) sistemas de frenagem automática;  
+                     2) assistência à direção;  
+                     3) outros recursos de segurança ativa.  
+                **Nota:** O governo deveria incentivar — e até obrigar — as montadoras a produzirem esses sistemas em série para todos os veículos fabricados, 
+                a exemplo do que foi feito com os cintos de segurança e o DRL (luz diurna).  
+                - 🚧 Instalação de lombadas eletrônicas e outros mecanismos de controle de velocidade nos pontos com maior concentração de acidentes.  
+                - 📢 Divulgação massiva dos dados de acidentes, promovendo transparência e conscientização da sociedade, 
+                uma vez que a falta de informação também contribui para os altos índices de incidência nas rodovias federais.  
+                - 🏥 Divulgação dos **custos de saúde pública** decorrentes dos acidentes, evidenciando o impacto financeiro e social desses eventos. 
+                Tal transparência permitiria ao próprio governo **direcionar mais investimentos para ações preventivas do que reparadoras**, 
+                reconhecendo que **uma vida não tem preço**.  
 
-A combinação dessas ações pode contribuir significativamente para reduzir o número de acidentes e aumentar a segurança viária nas rodovias federais.
-""", unsafe_allow_html=True)
-    
+                A combinação dessas ações pode contribuir significativamente para reduzir o número de acidentes e aumentar a segurança viária nas rodovias federais.
+            """, unsafe_allow_html=True)
+                    
 
         st.markdown("---")
         st.caption("_Nosso objetivo garantir transparência e reprodutibilidade da análise._")

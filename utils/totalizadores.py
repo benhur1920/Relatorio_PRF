@@ -13,9 +13,6 @@ def total_feridos(df):
 def total_veiculos(df):
     return f"{formatar_milhar(df['Veiculos'].sum())}"
 
-#def total_ilesos(df):
-   # return f"{formatar_milhar(df['Ilesos'].sum())}"
-
 
 def formatar_milhar(valor):
     if isinstance(valor, (pd.Series, list)):

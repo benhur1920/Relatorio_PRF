@@ -8,13 +8,7 @@ from utils.totalizadores import formatar_milhar
 
 
 def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
-    """
-    Gráfico de barras Plotly estilo Power BI, limpo:
-    - Sem títulos nos eixos
-    - Rótulos acima das barras
-    - Tooltip com percentual
-    - Tema light/dark automático
-    """
+    
 
     # Subtítulo no Streamlit
     if titulo:
@@ -65,48 +59,40 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
 
 
-
-
 # Grafico de pizza
 
 def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=None):
-    """
-    Cria gráfico de Pizza (torta) Plotly dinâmico, com rótulos de percentual.
-    - coluna_categoria: A fatia da pizza (Região, Tipo Acidente, etc.)
-    - coluna_valor: soma de valores (Mortos, Feridos) ou None para contar linhas
-    - top_n: para limitar categorias
-    - titulo: título do gráfico
-    """
+   
     if titulo:
         st.subheader(titulo)
 
-    # 1. Agregação dos dados
+    # Agregação dos dados
     if coluna_valor is None:
         total = df.groupby(coluna_categoria).size().reset_index(name='Total')
     else:
         total = df.groupby(coluna_categoria)[coluna_valor].sum().reset_index(name='Total')
 
-    # 2. Limita as categorias
+    # Limita as categorias
     if top_n is not None:
         total = total.nlargest(top_n, 'Total')
 
-    # 3. Tratamento de dataframe vazio
+    # Tratamento de dataframe vazio
     if total.empty:
         st.warning(f"Não há dados para exibir no gráfico: {titulo or ''}")
         return
 
-    # 4. Calcula colunas para o Tooltip
+    # Calcula colunas para o Tooltip
     soma_geral = total['Total'].sum()
     total['Percentual'] = (total['Total'] / soma_geral * 100) if soma_geral > 0 else 0
     total['Total_str'] = total['Total'].apply(formatar_milhar)
 
-    # 5. Ordena
+    # Ordena
     total = total.sort_values('Total', ascending=False)
     
-    # 6. Tema
+    # Tema
     tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
 
-    # --- 7. CORREÇÃO DO GRÁFICO DE PIZZA ---
+    # Aplicando
     fig = px.pie(
         total,
         names=coluna_categoria,    # As fatias
@@ -115,9 +101,9 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
         color_discrete_sequence=px.colors.sequential.Blues[2:], # Usa a paleta de azuis
         custom_data=['Total_str', 'Percentual']
     )
-    # --- FIM DA CORREÇÃO ---
+    
 
-    # 8. Ajustes de Rótulos e Tooltip
+    # Ajustes de Rótulos e Tooltip
     fig.update_traces(
         # Rótulo externo: usa o %{percent} interno
         texttemplate="%{percent:.1%}",
@@ -133,7 +119,7 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
         sort=True
     )
 
-    # 9. Ajustes de Layout
+    # Ajustes de Layout
     fig.update_layout(
         template=tema,
         margin=dict(t=25, l=0, r=0, b=0),
@@ -142,24 +128,18 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
         # 'coloraxis_showscale=False' removido, pois não há eixo de cor
     )
 
-    # 10. Renderiza
+    # Renderiza
     return st.plotly_chart(fig, use_container_width=True)
 
 # Grafico de area
 
 
 def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=None):
-    """
-    Cria gráfico Treemap interativo com Plotly Express em tons de azul.
-    - coluna_categoria: As caixas do treemap (Região, Tipo Acidente, etc.)
-    - coluna_valor: O tamanho das caixas (Mortos, Feridos) ou None para contar linhas
-    - top_n: limita categorias
-    - titulo: título do gráfico
-    """
+    
     if titulo:
         st.subheader(titulo)
 
-    # 1. Agregação dos dados
+    # Agregação dos dados
     if coluna_valor is None:
         total = df.groupby(coluna_categoria).size().reset_index(name='Total')
     else:
@@ -169,19 +149,19 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
     if top_n is not None:
         total = total.nlargest(top_n, 'Total')
 
-    # 3. Ordena do maior para o menor
+    # Ordena do maior para o menor
     total = total.sort_values('Total', ascending=False)
 
-    # 4. Calcula percentual
+    # Calcula percentual
     total['Percentual'] = (total['Total'] / total['Total'].sum() * 100).round(1)
 
-    # 5. Cria coluna formatada com ponto de milhar
+    # Cria coluna formatada com ponto de milhar
     total['Total_str'] = formatar_milhar(total['Total'])
 
-    # 6. Texto dentro do bloco: valor + percentual
+    # Texto dentro do bloco: valor + percentual
     total['Texto'] = total['Total_str'] + " (" + total['Percentual'].astype(str) + "%)"
 
-    # 7. Criação do Treemap
+    # Criação do Treemap
     fig = px.treemap(
         total,
         path=[coluna_categoria],
@@ -190,7 +170,7 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
         color_continuous_scale='Blues'
     )
 
-    # 8. Exibir o valor dentro do bloco e desativar tooltip
+    # Exibir o valor dentro do bloco e desativar tooltip
     fig.update_traces(
         texttemplate="%{label}<br>%{customdata[0]}",
         textinfo="label+text",
@@ -199,24 +179,19 @@ def grafico_treemap(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=
         hovertemplate=None
     )
 
-    # 9. Ajustes de layout
+    # Ajustes de layout
     fig.update_layout(
         margin=dict(t=25, l=0, r=0, b=0),
         font=dict(size=14),
         coloraxis_colorbar=dict(title="Total")
     )
 
-    # 10. Renderiza no Streamlit
+    # Renderiza no Streamlit
     return st.plotly_chart(fig, use_container_width=True)
 
 
 def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None, freq=None):
-    """
-    Gráfico de linha Plotly estilo Power BI.
-    - freq: frequência para preencher valores ausentes ('H', 'D', 'MS', 'M', etc).
-    - Adapta-se automaticamente ao tema do Streamlit.
-    - Exibe rótulos e tooltips.
-    """
+    
 
     if titulo:
         st.subheader(titulo)
@@ -299,12 +274,7 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None, freq=Non
 # Gráfico de radar
 
 def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
-    """
-    Cria gráfico de radar (teia) interativo com Plotly.
-    - coluna_categoria: eixo angular (ex: 'Grupo Via', 'Condicao Metereologica')
-    - coluna_grupo: separação por cor (ex: 'Tipo Acidente')
-    - titulo: título do gráfico
-    """
+    
 
     # Verifica se as colunas existem
     if coluna_categoria not in df.columns:
@@ -346,21 +316,9 @@ def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
     
 
 def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titulo, key=None):
-    """
-    Gera um gráfico de dispersão no Streamlit usando Plotly Express.
+    
 
-    Parâmetros:
-    - df: DataFrame a ser plotado
-    - coluna_x: coluna para eixo X
-    - coluna_y: coluna para eixo Y
-    - tamanho_y: coluna que define o tamanho dos pontos
-    - cor_bola: coluna que define a cor dos pontos
-    - nome_bola: coluna usada como hover_name
-    - titulo: título do gráfico
-    - key: chave opcional do Streamlit
-    """
-
-    # --- Gera o gráfico ---
+    #  Gera o gráfico 
     fig = px.scatter(
         df,
         x=coluna_x,
@@ -372,7 +330,7 @@ def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titul
     )
     fig.update_layout(height=500)
 
-    # --- Define uma chave única se não fornecida ---
+    #  Define uma chave única se não fornecida ---
     if key is None:
         key = f"{coluna_x}_{coluna_y}_{cor_bola}"
 
@@ -384,11 +342,7 @@ def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titul
 # Grafico de mapas de calor
 
 def grafico_heatmap(df, coluna_valor, titulo):
-    """
-    Cria um mapa de calor dinâmico (Mortos, Feridos ou Acidentes),
-    com zoom, contraste e suavização otimizados.
-    """
-
+    
 
     if df is None or df.empty:
         return None
@@ -432,7 +386,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
         zoom = 4.3
     else:
         raio_mapa = 16
-        zoom = 4.8  # 🔍 mais próximo e detalhado
+        zoom = 4.8  #  mais próximo e detalhado
 
     #  Geração do mapa 
     fig = px.density_mapbox(
@@ -457,7 +411,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
         title=titulo
     )
 
-    # --- Aparência geral ---
+    #  Aparência geral 
     fig.update_layout(
         height=650,
         margin=dict(l=0, r=0, t=60, b=0),
@@ -479,14 +433,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
 
 
 def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
-    """
-    Gráfico de colunas Plotly estilo Power BI, limpo:
-    - Colunas verticais
-    - Rótulos acima das colunas (com ponto de milhar)
-    - Tooltip com percentual e valor
-    - Tema light/dark automático
-    """
-
+    
     # Subtítulo no Streamlit
     if titulo:
         st.subheader(titulo)
