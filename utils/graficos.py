@@ -343,40 +343,43 @@ def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
-
-
-# Gráfico scater
+    
 
 def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titulo, key=None):
-    
-    df_temp = df.copy()
+    """
+    Gera um gráfico de dispersão no Streamlit usando Plotly Express.
 
-    df_temp['FERIDOS'] = df_temp['Feridos'].apply(formatar_milhar)
-    df_temp['MORTOS'] = df_temp['Mortos'].apply(formatar_milhar)
+    Parâmetros:
+    - df: DataFrame a ser plotado
+    - coluna_x: coluna para eixo X
+    - coluna_y: coluna para eixo Y
+    - tamanho_y: coluna que define o tamanho dos pontos
+    - cor_bola: coluna que define a cor dos pontos
+    - nome_bola: coluna usada como hover_name
+    - titulo: título do gráfico
+    - key: chave opcional do Streamlit
+    """
 
-    fig2 = px.scatter(
-        df_temp,
+    # --- Gera o gráfico ---
+    fig = px.scatter(
+        df,
         x=coluna_x,
         y=coluna_y,
         size=tamanho_y,
         color=cor_bola,
-        hover_name=nome_bola,
-        hover_data={
-            coluna_x: False,
-            coluna_y: False,
-            'MORTOS': True,   # mostra valor formatado
-            'FERIDOS': True,  # mostra valor formatado
-        },
+        hover_name=nome_bola,   # mostra apenas o nome da bola no tooltip
         title=titulo
     )
-    fig2.update_layout(height=500)
+    fig.update_layout(height=500)
 
-    #  Define uma chave única (necessária quando há vários gráficos semelhantes)
+    # --- Define uma chave única se não fornecida ---
     if key is None:
         key = f"{coluna_x}_{coluna_y}_{cor_bola}"
 
-    return st.plotly_chart(fig2, use_container_width=True, key=key)
+    return st.plotly_chart(fig, use_container_width=True, key=key)
+
+
+
 
 # Grafico de mapas de calor
 
