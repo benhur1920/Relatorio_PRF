@@ -25,6 +25,7 @@ def filtros_aplicados(df, nome_do_filtro):
     # Atualiza o session_state automaticamente (Streamlit faz isso ao usar key)
     # Apenas filtra os dados com base no valor atual
     return df[df[nome_do_filtro].isin(st.session_state[chave])] if st.session_state[chave] else df
+
 def filtro_mes_nome(df):
     meses_ordenados = {
         'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4,

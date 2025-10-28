@@ -275,6 +275,7 @@ def grafico_linha(df, coluna_x, coluna_y=None, titulo=None, top_n=None, freq=Non
 
 def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
     
+    st.subheader(titulo)
 
     # Verifica se as colunas existem
     if coluna_categoria not in df.columns:
@@ -307,7 +308,7 @@ def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
 
     fig.update_traces(fill='toself', hovertemplate='%{theta}<br>Total: %{r}<br>%{customdata[1]}%<extra></extra>')
     fig.update_layout(
-        title=titulo,
+        #title=titulo,
         polar=dict(radialaxis=dict(visible=True, linewidth=1, gridcolor='lightgray')),
         showlegend=True
     )
@@ -317,6 +318,7 @@ def grafico_radar(df, coluna_categoria, coluna_grupo, titulo):
 
 def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titulo, key=None):
     
+    st.subheader(titulo)
 
     #  Gera o gráfico 
     fig = px.scatter(
@@ -325,8 +327,8 @@ def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titul
         y=coluna_y,
         size=tamanho_y,
         color=cor_bola,
-        hover_name=nome_bola,   # mostra apenas o nome da bola no tooltip
-        title=titulo
+        hover_name=nome_bola   # mostra apenas o nome da bola no tooltip
+        #title=titulo
     )
     fig.update_layout(height=500)
 
@@ -343,7 +345,8 @@ def grafico_scater(df, coluna_x, coluna_y, tamanho_y, cor_bola, nome_bola, titul
 
 def grafico_heatmap(df, coluna_valor, titulo):
     
-
+    st.subheader(titulo)
+    
     if df is None or df.empty:
         return None
 
@@ -408,7 +411,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
         mapbox_style="carto-positron",  # mais leve e compatível
         color_continuous_scale=escala,
         range_color=range_color,
-        title=titulo
+        #title=titulo
     )
 
     #  Aparência geral 

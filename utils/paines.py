@@ -104,45 +104,43 @@ def graficos(df):
         divisor()
 
         st.subheader('🚗💥 Causas x Consequências dos Acidentes')
-        st.write('🧭 Selecione as variáveis e o fator de análise (ex: Região, Tipo, Causa) para explorar suas relações.')
+        st.subheader('🧭 Selecione os parâmetros e o fator de análise para construção de gráficos relacionais.')
 
 
         #  Definição de colunas 
-        colunas_x = ['Feridos', 'Mortos', 'Veiculos']
-        colunas_y = ['Mortos','Feridos',  'Veiculos']
+        colunas_x = ['Feridos', 'Mortos', 'Veiculos', 'Feridos Leves', 'Feridos Graves']
         coluna_causa = ['Grupo Via', 'Condicao Climatica Grupo', 'Tipo Acidente', 'Causa Grupo', 'Tipo Pista',
                         'Dia Semana', 'Partes Dia', 'Ano', 'Mês', 'Dia','Hora']
 
-        c1, c2, c3 = st.columns(3, gap="large")
+        c1,  c3 = st.columns(2, gap="large")
 
         with c1:
-            coluna_x = st.selectbox(
-                "📊 Selecione a primeira variável (Eixo X)",
+            opcoes = st.multiselect(
+                "⚠️ Selecione duas variáveis para gerar o gráfico",
                 options=colunas_x,
+                max_selections=2, 
+                default=["Feridos", "Mortos"],
                 key="select_coluna_x"
             )
-
-        with c2:
-            coluna_y = st.selectbox(
-                "📈 Selecione a segunda variável (Eixo Y)",
-                options=colunas_y,
-                key="select_coluna_y"
-            )
-
+           
         with c3:
             causa = st.selectbox(
                 "🎯 Selecione o fator de análise (ex: Região, Tipo, Causa, etc.)",
                 options=coluna_causa,
                 key="select_causa"
             )
+        
+        #Verificação de variáveis iguais 
+        # Verifica se o usuário escolheu 2 variáveis
+        if len(opcoes) < 2:
+            st.warning("⚠️ Selecione duas variáveis para gerar o gráfico.")
+            st.stop()  # interrompe a execução do restante do código até que o usuário selecione 2
+        else:
+            coluna_x, coluna_y = opcoes[0], opcoes[1]
 
-        #  Verificação de variáveis iguais 
-        if coluna_x == coluna_y:
-            st.warning(f"⚠️ As variáveis selecionadas para os eixos **X** e **Y** são iguais: **{coluna_x}**. \
-        Por favor, selecione variáveis diferentes para visualizar a relação entre elas.")
-            st.stop()  # interrompe a execução do restante do código até corrigir
-
-
+        
+        coluna_x = opcoes[0]
+        coluna_y = opcoes[1]
         #  Preparação para gráfico 
         df_temp = df.copy()
 
@@ -181,13 +179,8 @@ def graficos(df):
         
         divisor()
         
-        st.subheader("🎯 Selecione o tipo e os parâmetros para construção dos visualizações")
-        # Seletor de tipo de gráfico
-        tipo_mapa = st.radio(
-            "Tipo de Gráficos",
-            ["Treemap", "Barra", "Coluna" ],
-            horizontal=True
-        )
+        st.subheader("🎯 Selecione os parâmetros e o fator de análise para construção de gráficos.")
+        
 
         #  Definição de colunas 
         colunas_categoricas = ['Região', 'Uf', 'Municipio', 'Br']
@@ -222,6 +215,13 @@ def graficos(df):
             #  Título dinâmico 
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
 
+        # Seletor de tipo de gráfico
+        st.subheader("📊 Escolha o tipo de gráfico")
+        tipo_mapa = st.radio(
+            "",
+            ["Treemap", "Barra", "Coluna" ],
+            horizontal=True
+        )
             
 
         #  Chamada do gráfico de barras 
@@ -275,15 +275,9 @@ def graficos(df):
         
         divisor()
         
-        st.subheader("🎯 Selecione o tipo e os parâmetros para construção dos gráficos")
+        st.subheader("🎯 Selecione os parâmetros e o fator de análise para construção de gráficos.")
     
-        # Seletor de tipo de gráfico
-        tipo_mapa = st.radio(
-            "Tipo de Gráficos",
-            ["Treemap", "Pizza", "Coluna"],
-            horizontal=True
-        )
-
+        
         # As variáveis disponíveis
         colunas_categoricas = ['Tipo Pista', 'Condicao Climatica Grupo', 'Fase Dia', 'Partes Dia']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
@@ -317,7 +311,16 @@ def graficos(df):
 
             #  Título dinâmico 
             titulo = f"📊 {coluna_grupo_display} por {coluna_categoria}"
-        
+
+        # Seletor de tipo de gráfico
+        st.subheader("📊 Escolha o tipo de gráfico")
+        # Seletor de tipo de gráfico
+        tipo_mapa = st.radio(
+            "",
+            ["Treemap", "Pizza", "Coluna"],
+            horizontal=True
+        )
+
         # Exibir os gráficos 
         if tipo_mapa == "Treemap":
             try:
@@ -339,7 +342,7 @@ def graficos(df):
     with aba5:
         
         divisor()
-        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de radar para analise")
+        st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico de radar para análise")
         # Grafico de radar interativo
         # Dando opcoes para o usuario escolher
         colunas_categoricas = ['Condicao Metereologica', 'Fase Dia', 'Tipo Acidente', 'Classificacao Acidente',
@@ -433,6 +436,13 @@ def graficos(df):
 
         st.header("📘 Metodologia da Análise")
         st.markdown("Abaixo estão os principais critérios e tratamentos aplicados aos dados utilizados neste painel:")
+
+        with st.expander("📢 **Construção de Gráficos**"):
+            st.markdown("""
+            - ⚙️ O aplicativo permite a **escolha de diversos parâmetros** para personalizar suas análises;  
+            - 📊 Selecione os **gráficos** que melhor representem as informações que deseja explorar;  
+            - 🔍 Experimente diferentes combinações para obter **novas perspectivas** sobre os dados.  
+            """)
 
         with st.expander("🧹 **Principais tratamentos aplicados aos dados/Enriquecimento da fonte de dados**"):
             st.markdown("""
