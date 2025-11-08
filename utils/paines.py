@@ -8,42 +8,55 @@ from utils.filtros import filtros_aplicados
 from utils.totalizadores import (total_acidentes,formatar_milhar, total_mortos, total_feridos, total_veiculos,
                                  calculo_tot_acidentes, calculo_tot_mortos, calculo_tot_feridos, calculo_tot_veiculos)
 
+
+
+
+# Funcao para escolher a coluna categorica precisa de chave 
+def escolher_coluna_categorica(colunas_categoricas, chave):
+    
+    return st.selectbox(
+                "Selecione a escala de tempo disponivel do conjunto de dados para o Eixo X",
+                options=colunas_categoricas,
+                key=chave
+            )
+
+def escolher_coluna_numerica(grupo_options_display, chave):
+    return st.selectbox(
+                "Selecione o grupo disponivel do conjunto de dados para o Eixo Y)",
+                options=grupo_options_display,
+                #index=0,
+                key=chave
+            )
+
+
+
 def graficos(df):
 
     aba1, aba2, aba3, aba4, aba5, aba6, aba7 = st.tabs(["⏳ Linha do Tempo ","📉 Analise relacional", "🌍 Distribuição Geográfica", "⚠️ Características dos Acidentes",
                                                   "⚡Fatores de Ocorrências",  "🗺️ Mapas", "🧹 Notas Explicativas" ])
     divisor()
     with aba1:
+          
                 
-        # Fazer gráficos dinâmicos
-
         st.subheader("🎯 Selecione parâmetros abaixo para construção de um gráfico temporal para análise")
 
         #  Definição de colunas 
         colunas_categoricas = ['Data', 'Ano', 'Mês', 'Dia', 'Dia Semana', 'Hora']
         colunas_numericas = ['Mortos', 'Feridos', 'Veiculos']
 
+        # Calculo coluna numericas e o none para somatario do df
+        grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
+        grupo_options_display = [g[0] for g in grupo_display_map]
+
+
         c1,c2 = st.columns(2, gap="large")
         with c1:
-            #  Selectbox para categoria (Eixo X) 
-            coluna_categoria = st.selectbox(
-                "Selecione a escala de tempo disponivel do conjunto de dados para o Eixo X",
-                options=colunas_categoricas,
-                index=colunas_categoricas.index("Data"),
-                key="select_categoria"
-            )
+            #  Selectbox para categoria (Eixo X) com a chave que sera qtd de vez repetida
+            coluna_categoria = escolher_coluna_categorica(colunas_categoricas, 'primeiracategoria')
         with c2:
             #  Selectbox para grupo (Eixo Y) 
             # Mapeando None para "Total Acidentes"
-            grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
-            grupo_options_display = [g[0] for g in grupo_display_map]
-
-            coluna_grupo_display = st.selectbox(
-                "Selecione o grupo disponivel do conjunto de dados para o Eixo Y)",
-                options=grupo_options_display,
-                index=0,
-                key="select_grupo"
-            )
+            coluna_grupo_display = escolher_coluna_numerica(grupo_options_display, 'primeiranumerica')
 
         # Recupera o valor real do selectbox
         coluna_grupo = dict(grupo_display_map)[coluna_grupo_display]
@@ -61,6 +74,7 @@ def graficos(df):
             meses_pt = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
             df_temp['Mês'] = pd.Categorical(df_temp['Mês'], categories=meses_pt, ordered=True)
+            
         # Ordenar dia da semana corretamente, caso seja selecionado
         if coluna_categoria == "Dia Semana":
             dias_semana = ["Domingo", "Segunda-Feira", "Terça-Feira", "Quarta-Feira",
@@ -189,21 +203,13 @@ def graficos(df):
         c1, c2 = st.columns(2, gap="large")
 
         with c1:
-            coluna_categoria = st.selectbox(
-                "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
-                options=colunas_categoricas,
-                key="select_categoria_barra"  #  chave única
-            )
+            coluna_categoria = escolher_coluna_categorica(colunas_categoricas, 'segundaCategoria')
 
         with c2:
             grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
             grupo_options_display = [g[0] for g in grupo_display_map]
 
-            coluna_grupo_display = st.selectbox(
-                "Selecione o grupo disponível do conjunto de dados para o Eixo Y",
-                options=grupo_options_display,
-                key="select_grupo_barra"  #  chave única
-            )
+            coluna_grupo_display = escolher_coluna_numerica(grupo_options_display, 'segundaNumerica')
 
                 #  Mapeia o nome exibido (display) para o valor real 
             mapa_display_para_valor = dict(grupo_display_map)
@@ -286,21 +292,12 @@ def graficos(df):
 
         # Receber as variáveis dos gráficos
         with c1:
-            coluna_categoria = st.selectbox(
-                "Selecione a escala de tempo disponível do conjunto de dados para o Eixo X",
-                options=colunas_categoricas,
-                key="select_categoria_treemap"  # 🔹 chave única
-            )
-
+            coluna_categoria = escolher_coluna_categorica(colunas_categoricas, "terceiraCategoria")
         with c2:
             grupo_display_map = [("Total Acidentes", None)] + [(col, col) for col in colunas_numericas]
             grupo_options_display = [g[0] for g in grupo_display_map]
 
-            coluna_grupo_display = st.selectbox(
-                "Selecione o grupo disponível do conjunto de dados para o Eixo Y",
-                options=grupo_options_display,
-                key="select_grupo_treemap"  # 🔹 chave única
-            )
+            coluna_grupo_display = escolher_coluna_numerica(grupo_options_display, 'terceiraNumerica')
 
                 # Mapeia o nome exibido (display) para o valor real 
             mapa_display_para_valor = dict(grupo_display_map)
@@ -350,13 +347,9 @@ def graficos(df):
         colunas_numericas = ['Ano', 'Mês', 'Mortos', 'Feridos', 'Veiculos', 'Dia Semana']
 
         # Filtro para categoria (eixo angular)
-        coluna_categoria = st.selectbox(
-            "Escolha a categoria (eixo angular)", 
-            options=colunas_categoricas, 
-            index=colunas_categoricas.index("Tipo Acidente") if "Tipo Acidente" in colunas_categoricas else 0
-        )
+        coluna_categoria = escolher_coluna_categorica(colunas_categoricas, 'Quartavez')
 
-        # Filtro para grupo (ex.: Ano)
+        # Filtro para grupo (ex.: Ano) - Aqui já é diferente de categorias numericas
         coluna_grupo = st.selectbox(
             "Escolha o grupo para comparar (cor)", 
             options=[None] + colunas_numericas, 

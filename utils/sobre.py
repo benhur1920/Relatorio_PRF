@@ -3,13 +3,12 @@ import os
 from utils.marcadores import divisor
 
 def sobre():
-    
-      
-    
+    # Imagens do app
     imagem_path1 = os.path.join("imagem", "estrada.jpg")
     imagem_path2 = os.path.join("imagem", "silhueta-de-familia-feliz-na-sunset.jpg")
     imagem_path3 = os.path.join("imagem", "estrada-sinuosa-com-cerca-de-madeira-em-uma-floresta-de-montanha-floresta-verde-clara-contra-o-ceu-azul.jpg")
 
+    # Título da página Sobre
     st.markdown("<h2 style='text-align: center; '>🚨 Introdução ao Estudo dos Acidentes Rodoviários da PRF</h2>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -55,8 +54,6 @@ def sobre():
             """,
         unsafe_allow_html=True
     )
-
-
 
 
 def mainSobre():

@@ -27,6 +27,9 @@ def grafico_barra(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     # Ordena para exibir barras em ordem decrescente
     total = total.sort_values('Total', ascending=False)
     total['Total_str'] = formatar_milhar(total['Total'])
+
+    # Força eixo categórico a ser string
+    total[coluna_x] = total[coluna_x].astype(str)
     # Calcula percentual
     soma_total = total['Total'].sum()
     total['Percentual'] = (total['Total'] / soma_total * 100).round(1) if soma_total else 0
@@ -435,6 +438,12 @@ def grafico_heatmap(df, coluna_valor, titulo):
     return fig
 
 
+
+
+
+
+    
+    
 def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     
     # Subtítulo no Streamlit
@@ -453,6 +462,9 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
 
     # Ordena para exibir colunas em ordem decrescente
     total = total.sort_values('Total', ascending=True)
+
+    # Força eixo categórico a ser string
+    total[coluna_x] = total[coluna_x].astype(str)
 
     # Formata valor e percentual
     soma_total = total['Total'].sum()
@@ -487,8 +499,3 @@ def grafico_coluna(df, coluna_x, coluna_y=None, titulo=None, top_n=None):
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
-
-
-    
-    
