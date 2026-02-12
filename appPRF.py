@@ -13,7 +13,7 @@ from utils.funcoes import titulo_pagina, carregar_arquivo_parquet, iniciar_filtr
 # Configuração da página. Fica sempre no início do projeto
 st.set_page_config(
     layout="wide",
-    page_title="Acidnetes PRF 2021 a 2025"
+    page_title="Acidentes PRF 2021 a 2025"
 )
 
 # Ajusta path para encontrar utils
