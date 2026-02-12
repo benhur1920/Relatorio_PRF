@@ -95,7 +95,11 @@ def grafico_pizza(df, coluna_categoria, coluna_valor=None, titulo=None, top_n=No
     # Tema
     tema = 'plotly_white' if st.get_option("theme.base") == "light" else 'plotly_dark'
 
+<<<<<<< HEAD
     # Aplicando
+=======
+    # 7. Aplicando
+>>>>>>> c92491a (Atualizando a base de dados - Ano 2025)
     fig = px.pie(
         total,
         names=coluna_categoria,    # As fatias
