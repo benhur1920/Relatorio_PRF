@@ -13,7 +13,7 @@ from utils.funcoes import titulo_pagina, carregar_arquivo_parquet, iniciar_filtr
 # Configuração da página. Fica sempre no início do projeto
 st.set_page_config(
     layout="wide",
-    page_title="Acidentes PRF 2021 a 2025"
+    page_title="Acidentes PRF 2021 a 2026"
 )
 
 # Ajusta path para encontrar utils
@@ -24,7 +24,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
 hoje = date.today()
 
 # Caminho do arquivo
-CAMINHO_ARQUIVO = "Dados/PRF2023a2025.parquet"
+CAMINHO_ARQUIVO = "Dados/PRF2023a2026.parquet"
 
 # Entrada de dados
 df = carregar_arquivo_parquet(CAMINHO_ARQUIVO)
