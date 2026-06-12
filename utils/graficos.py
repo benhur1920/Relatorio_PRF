@@ -380,7 +380,7 @@ def grafico_heatmap(df, coluna_valor, titulo):
     elif coluna_valor == "Feridos":
         escala = "Purples"
     else:
-        escala = "Blues"
+        escala = "Greens"
 
     #  Ajuste dinâmico de raio e zoom 
     n_pontos = len(df)
